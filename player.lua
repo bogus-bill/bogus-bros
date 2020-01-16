@@ -2,11 +2,15 @@ require 'tools'
 require 'config'
 require 'character'
 
+-- TODO: put this somewhere else someday
+floor_y = CONFIG.RESOLUTION.HEIGHT
+
 Player = {}
 setmetatable(Player, {__index=Character})
 
-function Player.new(x, y, vx, vy)
+function Player.new(x, y, vx, vy, scalex, scaley)
   player = {
+    width=16, height=16,
     x=x, y=y,
     vx=vx, vy=vy,
     current_quad = mario_quad
@@ -28,11 +32,8 @@ function Player:update_speed()
 
   -- accelerate/decelerate character based on where player keyboard event (going left/right)
   local movement = "still"
-  local direction = "still"
 
-  -- figuring out if player direction 
   if love.keyboard.isDown(CONFIG.KEYS.RIGHT) then
-      direction = "right"
       if not love.keyboard.isDown(CONFIG.KEYS.LEFT) then
           if vx < 0 then 
               movement = "decelerating"
@@ -41,7 +42,6 @@ function Player:update_speed()
           end
       end
   elseif love.keyboard.isDown(CONFIG.KEYS.LEFT) then
-      direction = "left"
       if vx > 0 then
           movement = "decelerating"
       elseif vx <= 0 then
@@ -58,10 +58,8 @@ function Player:update_speed()
   end
 
   -- air dragging when player in the air 
-  if vy < 0 and vy > -4 then
-      if math.abs(vx) >= CONFIG.AIR_DRAG_CONST1 then 
-          vx = vx * CONFIG.AIR_DRAG_CONST2 
-      end
+  if vy < 0 and vy > -CONFIG.MAXJUMPSPEED and math.abs(vx) >= CONFIG.AIR_DRAG_CONST1 then 
+    vx = vx * CONFIG.AIR_DRAG_CONST2 
   end
 
   -- jumping
@@ -105,7 +103,7 @@ function Player:update_speed()
 end
 
 function Player:is_on_floor()
-  return self.y >= 100
+    return self.y + self.height >= floor_y
 end
 
 function Player:update()
@@ -113,7 +111,7 @@ function Player:update()
   self.x = self.x + self.vx
   self.y = self.y + self.vy
 
-  if player.y >= 100 then
-      player.y = 100
+  if self.y + self.height >= floor_y then
+    self.y = floor_y - self.height
   end
 end
