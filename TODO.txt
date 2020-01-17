@@ -1,3 +1,4 @@
+- add animation when moving mario
 - add proper jumping for mario
 - add background from image
 - add fireballs

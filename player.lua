@@ -8,9 +8,9 @@ floor_y = CONFIG.RESOLUTION.HEIGHT
 Player = {}
 setmetatable(Player, {__index=Character})
 
-function Player.new(x, y, vx, vy, scalex, scaley)
+function Player.new(x, y, width, height, vx, vy)
   player = {
-    width=16, height=16,
+    width=width, height=height,
     x=x, y=y,
     vx=vx, vy=vy,
     current_quad = mario_quad
