@@ -26,10 +26,16 @@ CONFIG = {
 text_atlas = love.graphics.newImage('sprites/mario/marios.png')
 -- background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds.png')
 background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds Animated.png')
+mario_atlas = love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
 
 atlas_dims = text_atlas:getDimensions()
+-- mario_quad = love.graphics.newQuad(0, 0, 16, 16, text_atlas:getDimensions())
+mario_quad = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions())
 
-mario_quad = love.graphics.newQuad(0, 0, 16, 16, text_atlas:getDimensions())
+mario_quads = { 
+  still = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions()),
+  walking = love.graphics.newQuad(18, 10, 16, 24, mario_atlas:getDimensions()),
+}
 
 block_width=512
 block_height=432
@@ -42,9 +48,7 @@ back1 = {
   love.graphics.newQuad(7+512+1, back_height_1, block_width, block_height, background_atlas:getDimensions()),
   love.graphics.newQuad(7+512*2+2, back_height_1, block_width, block_height, background_atlas:getDimensions()),
   love.graphics.newQuad(7+512*3+3, back_height_1, block_width, block_height, background_atlas:getDimensions()),
-  -- love.graphics.newQuad(7+512*4+4, back_height_1, block_width, block_height, background_atlas:getDimensions()),
 }
-
 back2 = {
   love.graphics.newQuad(7, back_height_2, block_width, block_height, background_atlas:getDimensions()),
   love.graphics.newQuad(520, back_height_2, block_width, block_height, background_atlas:getDimensions()),

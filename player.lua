@@ -8,11 +8,12 @@ floor_y = CONFIG.RESOLUTION.HEIGHT
 Player = {}
 setmetatable(Player, {__index=Character})
 
-function Player.new(x, y, width, height, vx, vy)
+function Player.new(x, y, width, height, vx, vy, scalex, scaley)
   player = {
     width=width, height=height,
     x=x, y=y,
     vx=vx, vy=vy,
+    scalex=scalex, scaley=scaley,
     current_quad = mario_quad
   }
   setmetatable(player, {__index = Player})
@@ -106,8 +107,27 @@ function Player:is_on_floor()
     return self.y + self.height >= floor_y
 end
 
-function Player:update()
+function Player:update_sprite()
+    -- max: 2.4
+    if math.abs(self.vx) == 0 then
+        self.sprite = "still"
+    else
+        self.sprite = "walking"
+    end
+end
+
+function Player:update_quad(dt)
+    if self.sprite == "still" then
+        self.current_quad = mario_quads["still"]
+    elseif self.sprite == "walking" then
+        self.current_quad = mario_quads["walking"]
+    end
+end
+
+function Player:update(dt)
   self:update_speed()
+  self:update_sprite()
+  self:update_quad(dt)
   self.x = self.x + self.vx
   self.y = self.y + self.vy
 

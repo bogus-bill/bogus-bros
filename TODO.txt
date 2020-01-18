@@ -1,7 +1,6 @@
 - add animation when moving mario
-- add proper jumping for mario
-- add background from image
-- add fireballs
+- add tilemap to add tiles (objets, walls, ...)
+- add scrolling of tilemap
 
 secondary:
 
@@ -12,4 +11,8 @@ secondary:
 - add laser eyes to shoot stuff
 - add yoshi and flying yoshi?
 - add wings
+- add fireballs
 
+# DONE:
+- add proper jumping for mario
+- add background from image
