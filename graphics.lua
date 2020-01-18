@@ -23,7 +23,9 @@ function animated_background:draw(scalex, scaley)
   -- draw background 3 times (-width, 0, +width) to allow it to scroll properly
   draw_at = {0, block_width, -block_width}
   for _, offset in pairs(draw_at) do
-    love.graphics.draw(background_atlas, self.quads[self.current_quad], self.x % block_width + offset , self.y, 0, scalex, scaley)
+    local xpos = self.x % block_width + offset
+    local ypos = self.y
+    love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos, 0, scalex, scaley)
   end
 end
 

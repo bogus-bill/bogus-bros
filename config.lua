@@ -13,14 +13,13 @@ CONFIG = {
   GRAVITYSPEED=0.25,
   MAXJUMPSPEED=3.5,
   KEYS=KEYS,
-  RESOLUTION={
-      WIDTH=64*16/2,
-      HEIGHT=54*16/2
+  GAMERESOLUTION={
+      WIDTH=32*16,
+      HEIGHT=27*16
+  },
+  WINDOWOPTIONS = {
+    resizable=true,
   }
-  -- RESOLUTION={
-  --   WIDTH=1024,
-  --   HEIGHT=864
-  -- }
 }
 
 text_atlas = love.graphics.newImage('sprites/mario/marios.png')

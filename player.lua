@@ -1,20 +1,21 @@
-require 'tools'
+require 'lib/tools'
 require 'config'
 require 'character'
 
 -- TODO: put this somewhere else someday
-floor_y = CONFIG.RESOLUTION.HEIGHT
+floor_y = CONFIG.GAMERESOLUTION.HEIGHT
 
 Player = {}
 setmetatable(Player, {__index=Character})
 
-function Player.new(x, y, width, height, vx, vy, scalex, scaley)
+function Player.new(x, y, width, height, vx, vy)
   player = {
     width=width, height=height,
-    x=x, y=y,
+    x=x*2, y=y*2,
     vx=vx, vy=vy,
-    scalex=scalex, scaley=scaley,
-    current_quad = mario_quad
+    texture_atlas=mario_atlas,
+    current_quad = mario_quad,
+    scalex=2, scaley=2
   }
   setmetatable(player, {__index = Player})
   return player
@@ -36,11 +37,11 @@ function Player:update_speed()
 
   if love.keyboard.isDown(CONFIG.KEYS.RIGHT) then
       if not love.keyboard.isDown(CONFIG.KEYS.LEFT) then
-          if vx < 0 then 
-              movement = "decelerating"
-          elseif vx >= 0 then
-              movement = "accelerating"
-          end
+        if vx < 0 then 
+            movement = "decelerating"
+        elseif vx >= 0 then
+            movement = "accelerating"
+        end
       end
   elseif love.keyboard.isDown(CONFIG.KEYS.LEFT) then
       if vx > 0 then
@@ -52,14 +53,14 @@ function Player:update_speed()
 
   if movement == "decelerating" then
       vx = sign(vx) * (math.abs(vx) - CONFIG.DEC)
-  elseif movement == "accelerating" then
+    elseif movement == "accelerating" then
       vx = sign(vx) * (math.abs(vx) + acc)
-  elseif movement == "still" then
-      vx = (math.abs(vx) - CONFIG.FRC) * sign(vx)
+  elseif math.abs(vx) > 0 then
+      vx = math.min(0, math.abs(math.abs(vx) - CONFIG.FRC)) * sign(vx)
   end
 
   -- air dragging when player in the air 
-  if vy < 0 and vy > -CONFIG.MAXJUMPSPEED and math.abs(vx) >= CONFIG.AIR_DRAG_CONST1 then 
+  if vy > -CONFIG.MAXJUMPSPEED and math.abs(vx) >= CONFIG.AIR_DRAG_CONST1 then 
     vx = vx * CONFIG.AIR_DRAG_CONST2 
   end
 
