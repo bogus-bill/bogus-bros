@@ -1,11 +1,14 @@
+
+local game = require("game")
+
+
 text_atlas = love.graphics.newImage('sprites/mario/marios.png')
 background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds Animated.png')
 atlas_dims = text_atlas:getDimensions()
 
 
 
-block_width=512
-block_height=432
+block_width, block_height = game:get_resolution()
 back_height_1 = 18
 back_height_2 = 18+block_height+6
 back_height_3 = 18+(block_height+6)*11

@@ -6,11 +6,11 @@ local game = require 'game'
 
 local window_options = config.WINDOWOPTIONS
 local game_width, game_height = game:get_resolution()
-local scale_width, scale_height
 
 local animated_background = graphics.animated_background
 
 frame_cnt = 0
+local scale_width, scale_height
 
 function love.load()
     player = Player:new(game_width/2, game_height/2, 16*2, 24*2, 0, 0)
@@ -35,10 +35,12 @@ function love.draw()
     love.graphics.scale(scale_width, scale_height)
     animated_background:draw()
     player:draw()
+
 end
 
 function love.resize()
     local screen_width, screen_height = love.graphics.getDimensions()
     scale_width, scale_height = screen_width/game_width, screen_height/game_height
+    
 end
 

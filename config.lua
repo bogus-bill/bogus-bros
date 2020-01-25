@@ -12,7 +12,7 @@ local KEYS={
 
 local config = {
   ACCR=0.13 * 2,
-  DEC=0.15,
+  DEC=0.15*2,
   ACCW=0.7,
   MAXSPEED_W=1.4*2, 
   MAXSPEED_R=1.4*(12/7)*2,
@@ -25,7 +25,6 @@ local config = {
   KEYS=KEYS,
   WINDOWOPTIONS = {
     resizable=true,
-    fullscreen=true,
   }
 }
 

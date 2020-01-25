@@ -59,10 +59,10 @@ function Player:update_speed()
 
   if movement == "decelerating" then
       vx = sign(vx) * (math.abs(vx) - config.DEC)
-    elseif movement == "accelerating" then
+  elseif movement == "accelerating" then
       vx = sign(vx) * (math.abs(vx) + acc)
-  elseif math.abs(vx) ~= 0 then
-      vx = math.abs(math.abs(vx) - config.FRC) * sign(vx)
+  elseif movement == "still" and math.abs(vx) ~= 0 then
+      vx = math.max(math.abs(vx) - config.FRC, 0) * sign(vx)
   end
 
   -- air dragging when Player in the air 
@@ -78,7 +78,7 @@ function Player:update_speed()
   if love.keyboard.isDown(config.KEYS.JUMP) then
       if self.is_on_floor and jump_ok then
           jump_ok = false
-          jump_flag = true
+          jump_flag = trueœ
           vy = -config.JUMPSPEED
       end
   else
@@ -115,12 +115,11 @@ function Player:is_on_floor()
 end
 
 function Player:update_sprite()
-    -- if math.abs(self.vx) == 0 then
-    --     self.sprite_state = "still"
-    -- else
-    --     self.sprite_state = "walking"
-    -- end
-    self.sprite_state = "walking"
+    if math.abs(self.vx) == 0 then
+        self.sprite_state = "still"
+    else
+        self.sprite_state = "walking"
+    end
 end
 
 function Player:update_quad(dt)
@@ -129,10 +128,10 @@ function Player:update_quad(dt)
     local nb_sprites = table.getn(state_sprites)
 
     -- know if we need to switch sprite
-    print(frame_cnt, self.vx)
+    -- print(frame_cnt, self.vx)
     if frame_cnt % 15 == 0 then
         self.sprite_ind = (self.sprite_ind + 1) % (nb_sprites + 1) 
-        print("indice:", self.sprite_ind, "state:", self.sprite_state)
+        -- print("indice:", self.sprite_ind, "state:", self.sprite_state)
     end
     self.current_quad = self.sprite_set[self.sprite_state]["quads"][self.sprite_ind]
     self.current_quad = self.sprite_set["walking"]["quads"][1]
