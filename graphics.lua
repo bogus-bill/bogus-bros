@@ -19,7 +19,7 @@ end
 
 function animated_background:draw(scalex, scaley)
   animated_background:update()
-  
+
   -- draw background 3 times (-width, 0, +width) to allow it to scroll properly
   draw_at = {0, block_width, -block_width}
   for _, offset in pairs(draw_at) do
@@ -28,20 +28,3 @@ function animated_background:draw(scalex, scaley)
     love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos, 0, scalex, scaley)
   end
 end
-
--- -- mario sprites
--- sprites = {
---   "mario":
---   {
---     "small": {text_atlas, 0, 0},
---     "big": {text_atlas, 0, 0},  
---   }
--- }
-
-
-
-
-
-
-
-

@@ -1,4 +1,5 @@
 require "keys"
+require "sprites" 
 
 CONFIG = {
   ACCR=0.13,
@@ -13,50 +14,7 @@ CONFIG = {
   GRAVITYSPEED=0.25,
   MAXJUMPSPEED=3.5,
   KEYS=KEYS,
-  GAMERESOLUTION={
-      WIDTH=32*16,
-      HEIGHT=27*16
-  },
   WINDOWOPTIONS = {
     resizable=true,
   }
-}
-
-text_atlas = love.graphics.newImage('sprites/mario/marios.png')
--- background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds.png')
-background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds Animated.png')
-mario_atlas = love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
-
-atlas_dims = text_atlas:getDimensions()
--- mario_quad = love.graphics.newQuad(0, 0, 16, 16, text_atlas:getDimensions())
-mario_quad = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions())
-
-mario_quads = { 
-  still = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions()),
-  walking = love.graphics.newQuad(18, 10, 16, 24, mario_atlas:getDimensions()),
-}
-
-block_width=512
-block_height=432
-back_height_1 = 18
-back_height_2 = 18+block_height+6
-back_height_3 = 18+(block_height+6)*11
-
-back1 = {
-  love.graphics.newQuad(7, back_height_1, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(7+512+1, back_height_1, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(7+512*2+2, back_height_1, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(7+512*3+3, back_height_1, block_width, block_height, background_atlas:getDimensions()),
-}
-back2 = {
-  love.graphics.newQuad(7, back_height_2, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(520, back_height_2, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(1033, back_height_2, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(1546, back_height_2, block_width, block_height, background_atlas:getDimensions())
-}
-back3 = {
-  love.graphics.newQuad(7, back_height_3, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(520, back_height_3, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(1033, back_height_3, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(1546, back_height_3, block_width, block_height, background_atlas:getDimensions())
 }

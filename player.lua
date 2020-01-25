@@ -1,27 +1,32 @@
 require 'lib/tools'
-require 'config'
-require 'character'
+local config = require "config"
+local character = require "character"
+local game = require "game"
 
--- TODO: put this somewhere else someday
-floor_y = CONFIG.GAMERESOLUTION.HEIGHT
+local _, game_height = game:get_resolution()
+local floor_y = game_height
 
-Player = {}
-setmetatable(Player, {__index=Character})
+player = {}
+setmetatable(player, {__index=character})
 
-function Player.new(x, y, width, height, vx, vy)
+function player:new(x, y, width, height, vx, vy)
   player = {
     width=width, height=height,
     x=x*2, y=y*2,
     vx=vx, vy=vy,
-    texture_atlas=mario_atlas,
     current_quad = mario_quad,
-    scalex=2, scaley=2
-  }
-  setmetatable(player, {__index = Player})
-  return player
+    texture_atlas= mario_atlas,
+    scalex=2, scaley=2,
+    sprite_set = sprite_set["mario"],
+    sprite_ind = 1,
+   }
+  setmetatable(player, {__index = player})
+  self = player
+  return self
 end
 
-function Player:update_speed()
+
+function player:update_speed()
   local vx = self.vx
   local vy = self.vy
   local acc = CONFIG.ACCR
@@ -55,8 +60,8 @@ function Player:update_speed()
       vx = sign(vx) * (math.abs(vx) - CONFIG.DEC)
     elseif movement == "accelerating" then
       vx = sign(vx) * (math.abs(vx) + acc)
-  elseif math.abs(vx) > 0 then
-      vx = math.min(0, math.abs(math.abs(vx) - CONFIG.FRC)) * sign(vx)
+  elseif math.abs(vx) ~= 0 then
+      vx = math.abs(math.abs(vx) - CONFIG.FRC) * sign(vx)
   end
 
   -- air dragging when player in the air 
@@ -104,28 +109,36 @@ function Player:update_speed()
   self.jump_ok = jump_ok
 end
 
-function Player:is_on_floor()
+function player:is_on_floor()
     return self.y + self.height >= floor_y
 end
 
-function Player:update_sprite()
-    -- max: 2.4
-    if math.abs(self.vx) == 0 then
-        self.sprite = "still"
-    else
-        self.sprite = "walking"
-    end
+function player:update_sprite()
+    -- if math.abs(self.vx) == 0 then
+    --     self.sprite_state = "still"
+    -- else
+    --     self.sprite_state = "walking"
+    -- end
+    self.sprite_state = "walking"
 end
 
-function Player:update_quad(dt)
-    if self.sprite == "still" then
-        self.current_quad = mario_quads["still"]
-    elseif self.sprite == "walking" then
-        self.current_quad = mario_quads["walking"]
+function player:update_quad(dt)
+    -- determine which sprite to draw
+    local state_sprites = self.sprite_set[self.sprite_state]
+    local nb_sprites = table.getn(state_sprites)
+
+    -- know if we need to switch sprite
+    print(frame_cnt, self.vx)
+    if frame_cnt % 15 == 0 then
+        self.sprite_ind = (self.sprite_ind + 1) % (nb_sprites + 1) 
+        print("indice:", self.sprite_ind, "state:", self.sprite_state)
     end
+    -- self.current_quad = self.sprite_set[self.sprite_state]["quads"][self.sprite_ind]
+    self.current_quad = self.sprite_set["walking"]["quads"][1]
+    -- self.current_quad = mario_quad
 end
 
-function Player:update(dt)
+function player:update(dt)
   self:update_speed()
   self:update_sprite()
   self:update_quad(dt)
@@ -135,4 +148,7 @@ function Player:update(dt)
   if self.y + self.height >= floor_y then
     self.y = floor_y - self.height
   end
+  frame_cnt = frame_cnt + 1
 end
+
+return player

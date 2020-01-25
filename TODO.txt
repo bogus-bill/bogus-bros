@@ -1,10 +1,10 @@
-- fix mario moving when still mode
-- add animation when moving mario
 - add tilemap to add tiles (objets, walls, ...)
 - add scrolling of tilemap
 
 secondary:
 
+- missile tete chercheuse
+- bat baseball
 - 2 players game with fireballs
 - implement second jump
 - add 3D effects
@@ -18,3 +18,5 @@ secondary:
 # DONE:
 - add proper jumping for mario
 - add background from image
+- fix mario moving when still mode
+- add animation when moving mario
