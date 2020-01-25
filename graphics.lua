@@ -1,6 +1,8 @@
 require 'config'
 
-animated_background = {
+local graphics = {}
+
+local animated_background = {
   quads = back1,
   current_quad=1,
   speed=10,
@@ -8,6 +10,8 @@ animated_background = {
   x=0,
   y=0
 }
+
+graphics.animated_background = animated_background
  
 function animated_background:update()
   self.speed_ind = (self.speed_ind + 1) % self.speed
@@ -28,3 +32,5 @@ function animated_background:draw(scalex, scaley)
     love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos, 0, scalex, scaley)
   end
 end
+
+return graphics
