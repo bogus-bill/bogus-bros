@@ -24,8 +24,8 @@ end
 function animated_background:draw(scalex, scaley)
   animated_background:update()
 
-  -- draw background 3 times (-width, 0, +width) to allow it to scroll properly
-  draw_at = {0, block_width, -block_width}
+  -- draw background 3 times at [-width, 0, +width] for scrolling
+  draw_at = {block_width, 0, -block_width}
   for _, offset in pairs(draw_at) do
     local xpos = self.x % block_width + offset
     local ypos = self.y

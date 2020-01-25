@@ -29,6 +29,8 @@ function love.update(dt)
     if love.keyboard.isDown("p") then animated_background.x = (animated_background.x + 10) end
 
     player:update(dt)
+
+    -- love.graphics.setScissor(100, 100, 100, 100)
 end
 
 function love.draw()

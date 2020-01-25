@@ -20,3 +20,7 @@ secondary:
 - add background from image
 - fix mario moving when still mode
 - add animation when moving mario
+
+IDEE:
+
+	-stocker les 10 dernieres positions de mario et en faire une courbe pour voir 

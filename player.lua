@@ -14,18 +14,33 @@ function Player:new(x, y, width, height, vx, vy)
   local obj = {
     width=width, height=height,
     x=x, y=y,
+    offsetx=0, offsety=0,
+    xs={}, ys={}, -- store n last positions
+    vxs={}, vys={}, -- store n last positions
     vx=vx, vy=vy,
+    direction="left",
     current_quad = mario_quad,
     texture_atlas= mario_atlas,
     scalex=2, scaley=2,
     sprite_set = sprite_set["mario"],
     sprite_ind = 1,
+    statestack = {}
    }
   setmetatable(obj, {__index = Player})
+
+  obj.statestack[1] = {
+      x = obj.x,
+      y = obj.y,
+      vx = obj.vx,
+      vy = obj.vy,
+      direction = obj.direction,
+    }
+  obj.xs[1], obj.ys[1] = obj.x, obj.y
+  obj.vxs[1], obj.vys[1] = obj.vx, obj.vy
+
   self = obj
   return obj
 end
-
 
 function Player:update_speed()
   local vx = self.vx
@@ -42,7 +57,8 @@ function Player:update_speed()
   local movement = "still"
 
   if love.keyboard.isDown(config.KEYS.RIGHT) then
-      if not love.keyboard.isDown(config.KEYS.LEFT) then
+    self.direction = "right"    
+    if not love.keyboard.isDown(config.KEYS.LEFT) then
         if vx < 0 then 
             movement = "decelerating"
         elseif vx >= 0 then
@@ -50,7 +66,8 @@ function Player:update_speed()
         end
       end
   elseif love.keyboard.isDown(config.KEYS.LEFT) then
-      if vx > 0 then
+    self.direction = "left"    
+    if vx > 0 then
           movement = "decelerating"
       elseif vx <= 0 then
           movement = "accelerating"
@@ -115,32 +132,67 @@ function Player:is_on_floor()
 end
 
 function Player:update_sprite()
-    if math.abs(self.vx) == 0 then
-        self.sprite_state = "still"
-    else
+    absvx = math.abs(self.vx) 
+    if absvx >= config.MAXSPEED_W then 
+        self.sprite_state = "running"
+    elseif absvx > 0 then
         self.sprite_state = "walking"
+    else
+        self.sprite_state = "still"
     end
 end
 
-function Player:update_quad(dt)
-    -- determine which sprite to draw
-    local state_sprites = self.sprite_set[self.sprite_state]
-    local nb_sprites = table.getn(state_sprites)
-
-    -- know if we need to switch sprite
-    -- print(frame_cnt, self.vx)
-    if frame_cnt % 15 == 0 then
-        self.sprite_ind = (self.sprite_ind + 1) % (nb_sprites + 1) 
-        -- print("indice:", self.sprite_ind, "state:", self.sprite_state)
+function Player:process_offset()
+    if self.direction == "left" then
+        self.offsetx = 0
+    else
+        self.offsetx = self.width
     end
-    self.current_quad = self.sprite_set[self.sprite_state]["quads"][self.sprite_ind]
-    self.current_quad = self.sprite_set["walking"]["quads"][1]
+end
+
+function Player:process_direction()
+    if self.direction ~= self.statestack[1].direction then
+        self:switch_direction()
+    end
+end
+
+function Player:switch_direction()
+    self.scalex = -self.scalex
+    self:process_offset() -- when scaling horizontally we need to adjust with a horizontal offset
+end
+
+function Player:update_quad(dt)
+    local min_rate, max_rate = 7, 20
+    local y_distance = self.y - self.statestack[1].y
+   
+    if math.abs(self.vx) == 0 then
+        self.current_quad = still_mario_quad
+    elseif math.abs(self.vx) > 0 and y_distance == 0 then
+        local switch_rate
+        if self.movement == "walking" then
+            switch_rate = calculate_switch_rate(self.vx, min_rate, max_rate, config.MAXSPEED_W)
+        else
+            switch_rate = calculate_switch_rate(self.vx, min_rate, max_rate, config.MAXSPEED_R)
+        end
+        print("swtich rate", switch_rate)
+        print("swtich rate", switch_rate)
+        if frame_cnt % switch_rate == 0 then
+            self.current_quad = walking_sprites:next()
+        end
+    end
 end
 
 function Player:update(dt)
   self:update_speed()
   self:update_sprite()
---   self:update_quad(dt)
+  self:update_quad(dt)
+  self:process_direction()
+
+  self.statestack[1].direction = self.direction
+  self.statestack[1].x = self.x
+  self.statestack[1].y = self.y
+  self.xs[1] = self.x
+  self.ys[1] = self.y
   self.x = self.x + self.vx
   self.y = self.y + self.vy
 
@@ -148,7 +200,10 @@ function Player:update(dt)
     self.y = floor_y - self.height
   end
   frame_cnt = frame_cnt + 1
-  print(self.x, self.y, game_height, game_width)
+end
+
+function Player:draw()
+    love.graphics.draw(self.texture_atlas, self.current_quad, self.x + self.offsetx, self.y + self.offsety, 0, self.scalex, self.scaley)
 end
 
 return Player
