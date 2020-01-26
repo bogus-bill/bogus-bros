@@ -39,7 +39,6 @@ end
 mario_atlas = love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
 mario_quad = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions())
 mario_quad2 = love.graphics.newQuad(18, 10, 16, 24, mario_atlas:getDimensions())
-mario_quad3 = love.graphics.newQuad(36, 10, 16, 24, mario_atlas:getDimensions())
 mario_quad4 = love.graphics.newQuad(54, 10, 16, 24, mario_atlas:getDimensions())
 
 mario_quads = { 
@@ -50,15 +49,13 @@ mario_quads = {
 still_mario_quad = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions()), mario_atlas
 local walking_mario = new_sprite(love.graphics.newQuad(18, 10, 16, 24, mario_atlas:getDimensions()), mario_atlas)
 
+
 sprite_set = {}
 
 sprite_set["mario"] = {}
 sprite_set["mario"]["walking"] = {
-  quads={
-    mario_quad,
-    mario_quad2,
-  },
-  freq=10,
+  mario_quad,
+  mario_quad2,
 }
 sprite_set["mario"]["still"] = {
   quads={
@@ -85,4 +82,10 @@ function SpriteAnimation:next()
   return self.sprite
 end
 
-walking_sprites = SpriteAnimation.new(sprite_set["mario"]["walking"]["quads"])
+walking_sprites = SpriteAnimation.new(sprite_set["mario"]["walking"])
+-- walking_sprites = SpriteAnimation.new(sprite_set["mario"]["walking"])
+
+lookingup_mario_quad = love.graphics.newQuad(36, 10, 16, 24, mario_atlas:getDimensions())
+lookingdown_mario_quad = love.graphics.newQuad(53, 10, 16, 24, mario_atlas:getDimensions())
+jumping_mario_quad = love.graphics.newQuad(70, 10, 16, 24, mario_atlas:getDimensions())
+falling_mario_quad = love.graphics.newQuad(87, 10, 16, 24, mario_atlas:getDimensions())

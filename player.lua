@@ -3,6 +3,7 @@ require 'lib/tools'
 local config = require "config"
 local character = require "character"
 local game = require "game"
+local events = require "events"
 
 local game_width, game_height = game:get_resolution()
 local floor_y = game_height
@@ -47,6 +48,8 @@ function Player:update_speed()
   local vy = self.vy
   local acc = config.ACCR
 
+  self.looking_up, self.looking_down = false, false
+
   if love.keyboard.isDown(config.KEYS.RUN) then
       maxspeed = config.MAXSPEED_R
   else
@@ -56,22 +59,26 @@ function Player:update_speed()
   -- accelerate/decelerate character based on where Player keyboard event (going left/right)
   local movement = "still"
 
-  if love.keyboard.isDown(config.KEYS.RIGHT) then
-    self.direction = "right"    
+  if events.is_going_right() then
+    self.direction = "right"
     if not love.keyboard.isDown(config.KEYS.LEFT) then
         if vx < 0 then 
             movement = "decelerating"
         elseif vx >= 0 then
             movement = "accelerating"
         end
-      end
-  elseif love.keyboard.isDown(config.KEYS.LEFT) then
-    self.direction = "left"    
+    end
+  elseif events.is_going_left() then
+    self.direction = "left"
     if vx > 0 then
-          movement = "decelerating"
-      elseif vx <= 0 then
-          movement = "accelerating"
-      end
+        movement = "decelerating"
+    elseif vx <= 0 then
+        movement = "accelerating"
+    end
+  elseif events.is_going_up() then
+    self.looking_up = true
+  elseif events.is_going_down() then
+    self.looking_down = true
   end
 
   if movement == "decelerating" then
@@ -82,20 +89,20 @@ function Player:update_speed()
       vx = math.max(math.abs(vx) - config.FRC, 0) * sign(vx)
   end
 
-  -- air dragging when Player in the air 
+  -- air dragging when above floor 
   if vy > -config.MAXJUMPSPEED and math.abs(vx) >= config.AIR_DRAG_CONST1 then 
     vx = vx * config.AIR_DRAG_CONST2 
   end
 
   -- jumping
-  local jump_ok = self.jump_ok -- whether Player pressing "jump" will trigger jumping
-  local jump_flag = self.jump_flag -- whether Player last jump was taken into account
-  local is_on_floor = self:is_on_floor() 
+  local jump_ok = self.jump_ok -- whether pressing "jump" will trigger jumping
+  local jump_flag = self.jump_flag -- whether last jump was acknowledged
+  local is_on_floor = self:is_on_floor()
 
   if love.keyboard.isDown(config.KEYS.JUMP) then
-      if self.is_on_floor and jump_ok then
+      if is_on_floor and jump_ok then
           jump_ok = false
-          jump_flag = trueœ
+          jump_flag = true
           vy = -config.JUMPSPEED
       end
   else
@@ -116,6 +123,7 @@ function Player:update_speed()
       end
   end
 
+  -- apply gravity force
   if not is_on_floor then
       vy = self.vy + config.GRAVITYSPEED
       vy = math.min(vy, 6)
@@ -132,8 +140,10 @@ function Player:is_on_floor()
 end
 
 function Player:update_sprite()
-    absvx = math.abs(self.vx) 
-    if absvx >= config.MAXSPEED_W then 
+    local absvx = math.abs(self.vx)
+    if self.looking_up == true then
+        self.sprite_state = "looking_up"
+    elseif absvx >= config.MAXSPEED_W then
         self.sprite_state = "running"
     elseif absvx > 0 then
         self.sprite_state = "walking"
@@ -161,21 +171,37 @@ function Player:switch_direction()
     self:process_offset() -- when scaling horizontally we need to adjust with a horizontal offset
 end
 
+function Player:is_jumping()
+    return not self:is_on_floor() and self.vy < 0
+end
+
+-- TODO: this integrates in some other way maybe falling from a plateforme without pushing jump
+function Player:is_falling()
+    return not self:is_on_floor() and self.vy > 2
+end
+
 function Player:update_quad(dt)
-    local min_rate, max_rate = 7, 20
+    local min_rate, max_rate = 10, 15
     local y_distance = self.y - self.statestack[1].y
-   
-    if math.abs(self.vx) == 0 then
+
+    if self.looking_up then
+        self.current_quad = lookingup_mario_quad
+    elseif self.looking_down then
+        self.current_quad = lookingdown_mario_quad
+    elseif self:is_jumping() then
+        self.current_quad = jumping_mario_quad
+    -- elseif self:is_falling() then
+        -- self.current_quad = falling_mario_quad
+    elseif math.abs(self.vx) == 0 then
         self.current_quad = still_mario_quad
     elseif math.abs(self.vx) > 0 and y_distance == 0 then
         local switch_rate
         if self.movement == "walking" then
             switch_rate = calculate_switch_rate(self.vx, min_rate, max_rate, config.MAXSPEED_W)
+        -- elseif self.movement == "running" then
         else
             switch_rate = calculate_switch_rate(self.vx, min_rate, max_rate, config.MAXSPEED_R)
         end
-        print("swtich rate", switch_rate)
-        print("swtich rate", switch_rate)
         if frame_cnt % switch_rate == 0 then
             self.current_quad = walking_sprites:next()
         end
@@ -205,5 +231,3 @@ end
 function Player:draw()
     love.graphics.draw(self.texture_atlas, self.current_quad, self.x + self.offsetx, self.y + self.offsety, 0, self.scalex, self.scaley)
 end
-
-return Player

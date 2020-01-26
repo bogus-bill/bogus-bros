@@ -12,7 +12,7 @@ local animated_background = {
 }
 
 graphics.animated_background = animated_background
- 
+
 function animated_background:update()
   self.speed_ind = (self.speed_ind + 1) % self.speed
   if self.speed_ind == 1 then
@@ -25,7 +25,7 @@ function animated_background:draw(scalex, scaley)
   animated_background:update()
 
   -- draw background 3 times at [-width, 0, +width] for scrolling
-  draw_at = {block_width, 0, -block_width}
+  local draw_at = {block_width, 0, -block_width}
   for _, offset in pairs(draw_at) do
     local xpos = self.x % block_width + offset
     local ypos = self.y

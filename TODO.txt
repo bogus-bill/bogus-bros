@@ -14,6 +14,7 @@ secondary:
 - add yoshi and flying yoshi?
 - add wings
 - add fireballs
+- add jump + Z to stomp enemy
 
 # DONE:
 - add proper jumping for mario
@@ -23,4 +24,4 @@ secondary:
 
 IDEE:
 
-	-stocker les 10 dernieres positions de mario et en faire une courbe pour voir 
+- stocker les 10 dernieres positions de mario et en faire une courbe pour voir 
