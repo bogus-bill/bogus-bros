@@ -22,15 +22,13 @@ function animated_background:update()
   end
 end
 
-function animated_background:draw(scalex, scaley)
-  animated_background:update()
-
+function animated_background:draw(scalex, scaley, offsetx, offsety)
   -- draw background 3 times at [-width, 0, +width] for scrolling
   local draw_at = {block_width, 0, -block_width}
   for _, offset in pairs(draw_at) do
     local xpos = self.x % block_width + offset
     local ypos = self.y
-    love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos, 0, scalex, scaley)
+    love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos+offsetx or 0, ypos+offsety or 0, 0, scalex, scaley)
   end
 end
 

@@ -84,9 +84,19 @@ function SpriteAnimation:next()
 end
 
 walking_sprites = SpriteAnimation.new(sprite_set["mario"]["walking"])
--- walking_sprites = SpriteAnimation.new(sprite_set["mario"]["walking"])
+
+
+hs_running_spriteset = {
+  love.graphics.newQuad(103, 10, 16, 24, mario_atlas:getDimensions()),
+  love.graphics.newQuad(120, 10, 16, 24, mario_atlas:getDimensions()),
+  -- love.graphics.newQuad(1+16*9 + 9, 10, 16, 24, mario_atlas:getDimensions()),
+}
+
+hs_running_sprites = SpriteAnimation.new(hs_running_spriteset)
 
 lookingup_mario_quad = love.graphics.newQuad(36, 10, 16, 24, mario_atlas:getDimensions())
 lookingdown_mario_quad = love.graphics.newQuad(53, 10, 16, 24, mario_atlas:getDimensions())
 jumping_mario_quad = love.graphics.newQuad(70, 10, 16, 24, mario_atlas:getDimensions())
-falling_mario_quad = love.graphics.newQuad(87, 10, 16, 24, mario_atlas:getDimensions())
+falling_mario_quad = love.graphics.newQuad(88, 10, 16, 24, mario_atlas:getDimensions())
+jumping_high_speed_mario_quad = love.graphics.newQuad(136, 10, 16, 24, mario_atlas:getDimensions())
+
