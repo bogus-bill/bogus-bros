@@ -1,15 +1,21 @@
 require 'lib/tools'
 
 local config = require "config"
-local character = require "character"
 local game = require "game"
-local events = require "events"
 
-local game_width, game_height = game:get_resolution()
-local floor_y = game_height
+Drawable = {}
+function Drawable:draw()
+  love.graphics.draw(self.texture_atlas, self.current_quad, self.x, self.y, 0, self.scalex, self.scaley)
+end
+
+local events = require "events"
+local floor_x, floor_y = game:get_resolution()
+local characters = {}
+
+require "sprites"
 
 Player = {}
-setmetatable(Player, {__index=character})
+setmetatable(Player, {__index=Drawable})
 
 function Player:new(x, y, width, height, vx, vy)
   local obj = {
@@ -59,7 +65,7 @@ function Player:update_speed()
   -- accelerate/decelerate character based on where Player keyboard event (going left/right)
   local movement = "still"
 
-  if events.is_going_right() then
+  if events.pushing_right() then
     self.direction = "right"
     if not love.keyboard.isDown(config.KEYS.LEFT) then
         if vx < 0 then 
@@ -68,16 +74,16 @@ function Player:update_speed()
             movement = "accelerating"
         end
     end
-  elseif events.is_going_left() then
+  elseif events.pushing_left() then
     self.direction = "left"
     if vx > 0 then
         movement = "decelerating"
     elseif vx <= 0 then
         movement = "accelerating"
     end
-  elseif events.is_going_up() then
+  elseif events.pushing_up() then
     self.looking_up = true
-  elseif events.is_going_down() then
+  elseif events.pushing_down() then
     self.looking_down = true
   end
 
@@ -139,7 +145,7 @@ function Player:is_on_floor()
     return self.y + self.height >= floor_y
 end
 
-function Player:update_sprite()
+function Player:update_sprite_state()
     local absvx = math.abs(self.vx)
     if self.looking_up == true then
         self.sprite_state = "looking_up"
@@ -172,46 +178,47 @@ function Player:switch_direction()
 end
 
 function Player:is_jumping()
-    return not self:is_on_floor() and self.vy < 0
+    return not self:is_on_floor() and self.vy <= 0
 end
 
 -- TODO: this integrates in some other way maybe falling from a plateforme without pushing jump
 function Player:is_falling()
-    return not self:is_on_floor() and self.vy > 2
+    return not self:is_on_floor() and self.vy > 0
 end
 
-function Player:update_quad(dt)
-    local min_rate, max_rate = 10, 15
+function Player:update_quad(dt, frame_cnt)
     local y_distance = self.y - self.statestack[1].y
 
-    if self.looking_up then
+    if self:is_falling() then
+        self.current_quad = falling_mario_quad
+    elseif self:is_jumping() then
+        self.current_quad = jumping_mario_quad
+    elseif self.looking_up then
         self.current_quad = lookingup_mario_quad
     elseif self.looking_down then
         self.current_quad = lookingdown_mario_quad
-    elseif self:is_jumping() then
-        self.current_quad = jumping_mario_quad
-    -- elseif self:is_falling() then
-        -- self.current_quad = falling_mario_quad
+
     elseif math.abs(self.vx) == 0 then
         self.current_quad = still_mario_quad
     elseif math.abs(self.vx) > 0 and y_distance == 0 then
         local switch_rate
+        local min_rate, max_rate = 7, 11
         if self.movement == "walking" then
             switch_rate = calculate_switch_rate(self.vx, min_rate, max_rate, config.MAXSPEED_W)
-        -- elseif self.movement == "running" then
         else
             switch_rate = calculate_switch_rate(self.vx, min_rate, max_rate, config.MAXSPEED_R)
         end
+        print(frame_cnt, switch_rate, "ok")
         if frame_cnt % switch_rate == 0 then
             self.current_quad = walking_sprites:next()
         end
     end
 end
 
-function Player:update(dt)
+function Player:update(dt, frame_cnt)
   self:update_speed()
-  self:update_sprite()
-  self:update_quad(dt)
+  self:update_sprite_state()
+  self:update_quad(dt, frame_cnt)
   self:process_direction()
 
   self.statestack[1].direction = self.direction
@@ -225,9 +232,12 @@ function Player:update(dt)
   if self.y + self.height >= floor_y then
     self.y = floor_y - self.height
   end
-  frame_cnt = frame_cnt + 1
 end
 
 function Player:draw()
     love.graphics.draw(self.texture_atlas, self.current_quad, self.x + self.offsetx, self.y + self.offsety, 0, self.scalex, self.scaley)
 end
+
+characters.Player = Player
+
+return characters

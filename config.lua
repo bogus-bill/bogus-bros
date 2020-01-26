@@ -1,5 +1,3 @@
-require "sprites" 
-
 local KEYS={
   LEFT="left",
   RIGHT="right",
@@ -25,6 +23,12 @@ local config = {
   KEYS=KEYS,
   WINDOWOPTIONS = {
     resizable=true,
+  },
+  TILES={
+    width=32,
+    height=27,
+    pixel_width=16,
+    pixel_height=16,
   }
 }
 

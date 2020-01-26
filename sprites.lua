@@ -1,14 +1,14 @@
 
-local game = require("game")
+-- game = game or require "game"
+-- require "game"
 
+block_width, block_height = 512, 432
 text_atlas = love.graphics.newImage('sprites/mario/marios.png')
 background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds Animated.png')
-atlas_dims = text_atlas:getDimensions()
 
-block_width, block_height = game:get_resolution()
-back_height_1 = 18
-back_height_2 = 18+block_height+6
-back_height_3 = 18+(block_height+6)*11
+local back_height_1 = 18
+local back_height_2 = 18+block_height+6
+local back_height_3 = 18+(block_height+6)*11
 
 back1 = {
   love.graphics.newQuad(7, back_height_1, block_width, block_height, background_atlas:getDimensions()),
@@ -37,6 +37,7 @@ function new_sprite(quad, texture_atlas)
 end
 
 mario_atlas = love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
+objects_atlas = love.graphics.newImage('sprites/objects/objects_atlas.png')
 mario_quad = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions())
 mario_quad2 = love.graphics.newQuad(18, 10, 16, 24, mario_atlas:getDimensions())
 mario_quad4 = love.graphics.newQuad(54, 10, 16, 24, mario_atlas:getDimensions())

@@ -1,4 +1,5 @@
 require 'config'
+require "sprites"
 
 local graphics = {}
 

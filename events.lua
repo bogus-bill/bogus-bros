@@ -7,20 +7,24 @@ local events = {
   looking_down = love.keyboard.isDown(config.KEYS.DOWN),
 }
 
-function events:is_going_left()
+function events:pushing_left()
   return love.keyboard.isDown(config.KEYS.LEFT)
 end
 
-function events:is_going_right()
+function events:pushing_right()
   return love.keyboard.isDown(config.KEYS.RIGHT)
 end
 
-function events:is_going_up()
+function events:pushing_up()
   return love.keyboard.isDown(config.KEYS.UP)
 end
 
-function events:is_going_down()
+function events:pushing_down()
   return love.keyboard.isDown(config.KEYS.DOWN)
+end
+
+function events:pushing_reset()
+  return love.keyboard.isDown(config.KEYS.RESET)
 end
 
 return events
