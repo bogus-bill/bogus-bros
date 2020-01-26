@@ -10,3 +10,21 @@ function calculate_switch_rate(speed, min_rate, max_rate, max_speed)
 
   return switch_rate
 end
+
+LinkedList = {}
+
+function LinkedList.new(max_length)
+  local obj = {
+    data = {},
+    max_length=max_length
+  }
+  setmetatable(obj, {__index=LinkedList})
+  return obj
+end
+
+function LinkedList:push(item)
+  if next(self.data) == nil then
+    print("empty")
+  end
+end
+

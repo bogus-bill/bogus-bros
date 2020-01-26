@@ -41,15 +41,15 @@ function Player:new(x, y, width, height, vx, vy)
 }
   setmetatable(obj, {__index = Player})
 
-  obj.statestack[1] = {
-      x = obj.x,
-      y = obj.y,
-      vx = obj.vx,
-      vy = obj.vy,
-      direction = obj.direction,
-    }
-  obj.xs[1], obj.ys[1] = obj.x, obj.y
-  obj.vxs[1], obj.vys[1] = obj.vx, obj.vy
+--   obj.statestack[1] = {
+--       x = obj.x,
+--       y = obj.y,
+--       vx = obj.vx,
+--       vy = obj.vy,
+--       direction = obj.direction,
+--   }
+--   obj.statestack[1].x, obj.statestack[1].y = obj.x, obj.y
+--   obj.statestack[1].vx, obj.statestack[1].vy = obj.vx, obj.vy
 
   self = obj
   return obj
@@ -99,17 +99,19 @@ function Player:update_speed()
       vx = sign(vx) * (math.abs(vx) + acc)
   end
 
---   vx = math.max(math.abs(vx) - self.friction, 0) * sign(vx)
+  vx = math.max(math.abs(vx) - self.friction, 0) * sign(vx)
 
-    -- -- air dragging when above floor
-    -- if vy > -config.MAXJUMPSPEED and math.abs(vx) >= config.AIR_DRAG_CONST1 then
-    --     print("applying bullshit", game.frame_cnt) 
-    --     if self.is_high_speed_running then 
-    --         vx = vx * (0.99)
-    --     else
-    --         vx = vx * config.AIR_DRAG_CONST2
-    --     end
-    -- end
+  -- air dragging when above floor
+  --if (not self:is_on_floor()) 
+  --        -- and vy > -config.MAXJUMPSPEED 
+  --        and math.abs(vx) >= config.AIR_DRAG_CONST1 then
+  --    print("applying bullshit", game.frame_cnt) 
+  --    if self.is_high_speed_running then 
+  --        vx = vx * (0.99)
+  --    else
+  --        vx = vx * config.AIR_DRAG_CONST2
+  --    end
+  --end
   -- jumping
   local jump_ok = self.jump_ok -- whether pressing "jump" will trigger jumping
   local jump_flag = self.jump_flag -- whether last jump was acknowledged
@@ -178,9 +180,11 @@ function Player:process_offset()
     end
 end
 
-function Player:process_direction()
-    if self.direction ~= self.statestack[1].direction then
-        self:switch_direction()
+function Player:update_direction()
+    if table.getn(self.statestack) > 1 then
+        if self.direction ~= self.statestack[1].direction then
+            self:switch_direction()
+        end
     end
 end
 
@@ -198,8 +202,16 @@ function Player:is_falling()
     return not self:is_on_floor() and self.vy > 0
 end
 
+-- return dy = y - y[last_frame]
+function Player:get_y_distance()
+    if table.getn(self.statestack) > 2 then
+        print(self.y - self.statestack[1].y, self.y, self.statestack[1].y, "herewego")
+        return self.y - self.statestack[1].y
+    end
+    return 0
+end
 function Player:update_quad(dt, frame_cnt)
-    local y_distance = self.y - self.statestack[1].y
+    local y_distance = self:get_y_distance()
 
     if self:is_falling() then
         if self.is_high_speed_running then
@@ -266,15 +278,25 @@ function Player:update(dt, frame_cnt)
   self:update_speed()
   self:update_sprite_state()
   self:update_quad(dt, frame_cnt)
-  self:process_direction()
-
+  self:update_direction()
   self:process_high_speed_running()
 
-  self.statestack[1].direction = self.direction
-  self.statestack[1].x = self.x
-  self.statestack[1].y = self.y
-  self.xs[1] = self.x
-  self.ys[1] = self.y
+  local statestack_elem = {
+      x=self.x,
+      y=self.y,
+      direction=self.direction,
+      vx=self.vx,
+      vy=self.vy,
+      quad=self.current_quad,
+      scalex=self.scalex,
+      scaley=self.scaley,
+  }
+--   if game.frame_cnt % 2 == 0 then
+    table.insert(self.statestack, 1, statestack_elem)
+    if table.getn(self.statestack) > config.STATESTACKMAXELEM then
+        table.remove(self.statestack, 9)
+    end
+--   end
   self.x = self.x + self.vx
   self.y = self.y + self.vy
 
@@ -285,6 +307,9 @@ end
 
 function Player:draw(offsetx, offsety)
     love.graphics.draw(self.texture_atlas, self.current_quad, self.x + self.offsetx + offsetx, self.y + self.offsety + offsety, 0, self.scalex, self.scaley)
+    -- for _, elem in ipairs(self.statestack) do
+    --     love.graphics.draw(self.texture_atlas, elem.quad, elem.x + self.offsetx + offsetx, elem.y + self.offsety + offsety, 0, elem.scalex, elem.scaley)
+    -- end
 end
 
 characters.Player = Player

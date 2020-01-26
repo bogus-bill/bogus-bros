@@ -15,13 +15,13 @@ local config = {
   MAXSPEED_W=1.4*2,              -- max walking speed
   MAXSPEED_R=1.4*2*1.6,       -- max regular running speed
   MAXSPEED_HSR=1.4*(12/7)*1.5*2, -- max high speed running speed
-  FRAMES_UNTIL_HS_RUNNING=35,    -- how many frames while runnig at MAXSPEED_R until reaching high speed running
+  FRAMES_UNTIL_HS_RUNNING=45,    -- how many frames while runnig at MAXSPEED_R until reaching high speed running
   FRC=0.033,
   AIR_DRAG_CONST1=0.125,
   AIR_DRAG_CONST2=0.96875,
   JUMPSPEED=5.81*1.2, 
-  JUMPSPEED_HSR=5.81*1.3*1.3,
-  GRAVITYSPEED=0.25*1,
+  JUMPSPEED_HSR=5.81*1.2*1.5,
+  GRAVITYSPEED=0.25*1.2,
   MAXJUMPSPEED=3.5,
   KEYS=KEYS,
   WINDOWOPTIONS = {
@@ -32,7 +32,8 @@ local config = {
     height=27,
     pixel_width=16,
     pixel_height=16,
-  }
+  },
+  STATESTACKMAXELEM=50,
 }
 
 return config
