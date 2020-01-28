@@ -17,6 +17,20 @@ secondary:
 - add jump + Z to stomp enemy
 - POW object with earthquake effect
 
+- lightning from sky which indicated like 2 seconds in advance where its gonna land
+- battle royal mode
+- cursed mushroom
+- hammer that acts like a boomrang
+- roof tiles that fall and eventually explode
+- if enemys take a mushroom they get big or evil
+- kirby
+- bowser mode where bowser is hero
+- enemys throw fireballs
+- evil mario
+- fireballs that destroy walls
+- bob-bombs
+
+
 # DONE:
 - add proper jumping for mario
 - add background from image

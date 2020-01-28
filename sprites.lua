@@ -38,6 +38,7 @@ end
 
 mario_atlas = love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
 objects_atlas = love.graphics.newImage('sprites/objects/objects_atlas.png')
+objects_atlas2 = love.graphics.newImage('sprites/objects/SMO_Power_Moon_Green.png')
 mario_quad = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions())
 mario_quad2 = love.graphics.newQuad(18, 10, 16, 24, mario_atlas:getDimensions())
 mario_quad4 = love.graphics.newQuad(54, 10, 16, 24, mario_atlas:getDimensions())
@@ -95,7 +96,7 @@ hs_running_spriteset = {
 hs_running_sprites = SpriteAnimation.new(hs_running_spriteset)
 
 lookingup_mario_quad = love.graphics.newQuad(36, 10, 16, 24, mario_atlas:getDimensions())
-lookingdown_mario_quad = love.graphics.newQuad(53, 10, 16, 24, mario_atlas:getDimensions())
+lookingdown_mario_quad = love.graphics.newQuad(52, 10, 16, 24, mario_atlas:getDimensions())
 jumping_mario_quad = love.graphics.newQuad(70, 10, 16, 24, mario_atlas:getDimensions())
 falling_mario_quad = love.graphics.newQuad(88, 10, 16, 24, mario_atlas:getDimensions())
 jumping_high_speed_mario_quad = love.graphics.newQuad(136, 10, 16, 24, mario_atlas:getDimensions())

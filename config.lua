@@ -33,7 +33,7 @@ local config = {
     pixel_width=16,
     pixel_height=16,
   },
-  STATESTACKMAXELEM=50,
+  STATESTACKMAXELEM=20,
 }
 
 return config

@@ -13,6 +13,7 @@ local floor_x, floor_y = game:get_resolution()
 local characters = {}
 
 require "sprites"
+local physics = require "lib/physics"
 
 Player = {}
 setmetatable(Player, {__index=Drawable})
@@ -38,18 +39,9 @@ function Player:new(x, y, width, height, vx, vy)
     jumpspeed = config.JUMPSPEED,
     friction = config.FRC,
     frames_on_maxspeed = 0,
+    bbox = physics.Bbox.init()
 }
   setmetatable(obj, {__index = Player})
-
---   obj.statestack[1] = {
---       x = obj.x,
---       y = obj.y,
---       vx = obj.vx,
---       vy = obj.vy,
---       direction = obj.direction,
---   }
---   obj.statestack[1].x, obj.statestack[1].y = obj.x, obj.y
---   obj.statestack[1].vx, obj.statestack[1].vy = obj.vx, obj.vy
 
   self = obj
   return obj
@@ -74,7 +66,7 @@ function Player:update_speed()
   if events.pushing_right() then
     self.direction = "right"
     if not love.keyboard.isDown(config.KEYS.LEFT) then
-        if vx < 0 then 
+        if vx < 0 then
             movement = "decelerating"
         elseif vx >= 0 then
             movement = "accelerating"
@@ -102,11 +94,11 @@ function Player:update_speed()
   vx = math.max(math.abs(vx) - self.friction, 0) * sign(vx)
 
   -- air dragging when above floor
-  --if (not self:is_on_floor()) 
-  --        -- and vy > -config.MAXJUMPSPEED 
+  --if (not self:is_on_floor())
+  --        -- and vy > -config.MAXJUMPSPEED
   --        and math.abs(vx) >= config.AIR_DRAG_CONST1 then
-  --    print("applying bullshit", game.frame_cnt) 
-  --    if self.is_high_speed_running then 
+  --    print("applying bullshit", game.frame_cnt)
+  --    if self.is_high_speed_running then
   --        vx = vx * (0.99)
   --    else
   --        vx = vx * config.AIR_DRAG_CONST2
@@ -131,7 +123,7 @@ function Player:update_speed()
       if vy < 0 then
           if jump_flag == true then
               jump_flag = false
-              if vy < -self.jumpspeed/2 then 
+              if vy < -self.jumpspeed/2 then
                   vy = -self.jumpspeed/2
               end
               if vy < -config.MAXJUMPSPEED then
@@ -204,8 +196,7 @@ end
 
 -- return dy = y - y[last_frame]
 function Player:get_y_distance()
-    if table.getn(self.statestack) > 2 then
-        print(self.y - self.statestack[1].y, self.y, self.statestack[1].y, "herewego")
+    if table.getn(self.statestack) > 1 then
         return self.y - self.statestack[1].y
     end
     return 0
@@ -229,7 +220,6 @@ function Player:update_quad(dt, frame_cnt)
         self.current_quad = lookingup_mario_quad
     elseif self.looking_down then
         self.current_quad = lookingdown_mario_quad
-
     elseif math.abs(self.vx) == 0 then
         self.current_quad = still_mario_quad
     elseif math.abs(self.vx) > 0 and y_distance == 0 then
@@ -290,13 +280,13 @@ function Player:update(dt, frame_cnt)
       quad=self.current_quad,
       scalex=self.scalex,
       scaley=self.scaley,
+      offsetx=self.offsetx,
+      offsety=self.offsety,
   }
---   if game.frame_cnt % 2 == 0 then
-    table.insert(self.statestack, 1, statestack_elem)
-    if table.getn(self.statestack) > config.STATESTACKMAXELEM then
-        table.remove(self.statestack, 9)
-    end
---   end
+  table.insert(self.statestack, 1, statestack_elem)
+  if table.getn(self.statestack) > config.STATESTACKMAXELEM then
+      table.remove(self.statestack, 10)
+  end
   self.x = self.x + self.vx
   self.y = self.y + self.vy
 
@@ -305,11 +295,20 @@ function Player:update(dt, frame_cnt)
   end
 end
 
+function Drawable:draw_collision_box()
+    love.graphics.line(self.x, self.y,
+        self.x + self.width, self.y)
+    love.graphics.line(self.x, self.y + self.height,
+        self.x + self.width, self.y + self.height)
+    love.graphics.line(self.x, self.y,
+        self.x, self.y + self.height)
+    love.graphics.line(self.x + self.width, self.y,
+        self.x + self.width, self.y + self.height)
+end
+
 function Player:draw(offsetx, offsety)
     love.graphics.draw(self.texture_atlas, self.current_quad, self.x + self.offsetx + offsetx, self.y + self.offsety + offsety, 0, self.scalex, self.scaley)
-    -- for _, elem in ipairs(self.statestack) do
-    --     love.graphics.draw(self.texture_atlas, elem.quad, elem.x + self.offsetx + offsetx, elem.y + self.offsety + offsety, 0, elem.scalex, elem.scaley)
-    -- end
+    self:draw_collision_box()
 end
 
 characters.Player = Player
