@@ -1,5 +1,8 @@
 - add tilemap to add tiles (objets, walls, ...)
 - add scrolling of tilemap
+- add camera
+- add Perlin noise and cubic asymptotic for camera
+- make portalsss
 
 secondary:
 
@@ -17,10 +20,11 @@ secondary:
 - add jump + Z to stomp enemy
 - POW object with earthquake effect
 
+- add HERO SIEGE mode
 - lightning from sky which indicated like 2 seconds in advance where its gonna land
 - battle royal mode
 - cursed mushroom
-- hammer that acts like a boomrang
+- boomrang
 - roof tiles that fall and eventually explode
 - if enemys take a mushroom they get big or evil
 - kirby

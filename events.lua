@@ -1,11 +1,6 @@
 local config = require "config"
 
-local events = {
-  going_left = love.keyboard.isDown(config.KEYS.LEFT),
-  pushing_right = love.keyboard.isDown(config.KEYS.RIGHT),
-  looking_up = love.keyboard.isDown(config.KEYS.UP),
-  looking_down = love.keyboard.isDown(config.KEYS.DOWN),
-}
+local events = {}
 
 function events:pushing_left()
   return love.keyboard.isDown(config.KEYS.LEFT)

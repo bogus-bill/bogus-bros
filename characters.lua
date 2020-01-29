@@ -39,12 +39,16 @@ function Player:new(x, y, width, height, vx, vy)
     jumpspeed = config.JUMPSPEED,
     friction = config.FRC,
     frames_on_maxspeed = 0,
-    bbox = physics.Bbox.init()
+    bbox = physics.Bbox:new(x, y, width, height),
 }
   setmetatable(obj, {__index = Player})
 
   self = obj
   return obj
+end
+
+function Player:collide_bbox(x, y, width, height)
+    return self.bbox:collide_bbox(x, y, width, height)
 end
 
 function Player:update_speed()
@@ -270,6 +274,7 @@ function Player:update(dt, frame_cnt)
   self:update_quad(dt, frame_cnt)
   self:update_direction()
   self:process_high_speed_running()
+  self.bbox:update_coordinates(self.x, self.y)
 
   local statestack_elem = {
       x=self.x,
@@ -295,22 +300,16 @@ function Player:update(dt, frame_cnt)
   end
 end
 
-function Drawable:draw_collision_box()
-    love.graphics.line(self.x, self.y,
-        self.x + self.width, self.y)
-    love.graphics.line(self.x, self.y + self.height,
-        self.x + self.width, self.y + self.height)
-    love.graphics.line(self.x, self.y,
-        self.x, self.y + self.height)
-    love.graphics.line(self.x + self.width, self.y,
-        self.x + self.width, self.y + self.height)
+function Player:draw(x, y)
+    -- if not angle then angle = 0 end
+    -- love.graphics.draw(self.texture_atlas, self.current_quad, self.x + self.offsetx + offsetx, self.y + self.offsety + offsety, angle, self.scalex, self.scaley)
+    self.bbox:draw(x, y)
+    love.graphics.draw(self.texture_atlas, self.current_quad, x + self.offsetx, y + self.offsety, 0, self.scalex, self.scaley)
 end
 
-function Player:draw(offsetx, offsety)
-    love.graphics.draw(self.texture_atlas, self.current_quad, self.x + self.offsetx + offsetx, self.y + self.offsety + offsety, 0, self.scalex, self.scaley)
-    self:draw_collision_box()
+function Player:print_debug()
+    print(self.bbox.x, self.bbox.y, self.bbox.width, self.bbox.height)
 end
-
 characters.Player = Player
 
 return characters
