@@ -72,15 +72,13 @@ end
 function game:draw()
   local player = self.player
 
-  -- self.animated_background:draw(1, 1, -self.player.x, 0)
-  -- self.player:draw(-self.player.x + game_width/2, 0)
   local player_x, player_y = camera:to_screen_position(self.player.x, self.player.y)
   local back_x, back_y = camera:to_screen_position(self.animated_background.x, self.animated_background.y)
   local rect_x, rect_y = camera:to_screen_position(300, 300)
 
+  -- offx, offy, angle = shake_camera()
+
   self.animated_background:draw(back_x, back_y)
-
-
   self.player:draw(player_x, player_y)
 
   local mode = 'line'
@@ -89,8 +87,10 @@ function game:draw()
     mode = 'fill'
   end
   love.graphics.rectangle(mode, rect_x, rect_y, 50, 100)
+end
 
-
+function game:throw_explosion()
+  
 end
 
 return game

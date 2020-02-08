@@ -3,6 +3,7 @@
 - add camera
 - add Perlin noise and cubic asymptotic for camera
 - make portalsss
+- make slow-motion matrix like
 
 secondary:
 
@@ -33,6 +34,10 @@ secondary:
 - evil mario
 - fireballs that destroy walls
 - bob-bombs
+
+
+IDEE QUI TUE:
+    - faire ralentit ! : et pouvoir le faire par exemple que quand on sait qu'on va s'approcher d'un truc cool (etoile, champignon, etc...). Parait pas mal!
 
 
 # DONE:

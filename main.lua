@@ -1,3 +1,5 @@
+
+
 require 'lib/tools'
 
 local config = require 'config'
@@ -31,4 +33,3 @@ function love.resize()
     local screen_width, screen_height = love.graphics.getDimensions()
     scale_width, scale_height = screen_width/game_width, screen_height/game_height
 end
-

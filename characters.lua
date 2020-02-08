@@ -298,6 +298,13 @@ function Player:update(dt, frame_cnt)
   if self.y + self.height >= floor_y then
     self.y = floor_y - self.height
   end
+
+  if love.keyboard.isDown("m") then
+    local angle, offx, offy = shake_camera()
+    camera.x = camera.x + offx
+    camera.y = camera.y + offy
+  end
+
 end
 
 function Player:draw(x, y)
@@ -311,5 +318,14 @@ function Player:print_debug()
     print(self.bbox.x, self.bbox.y, self.bbox.width, self.bbox.height)
 end
 characters.Player = Player
+
+Bobomb = {}
+
+function Bobomb.init()
+    local obj = {}
+    setmetatable(obj, {__index=Drawable})
+    return obj
+end
+
 
 return characters
