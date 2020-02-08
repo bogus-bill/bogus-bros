@@ -292,8 +292,8 @@ function Player:update(dt, frame_cnt)
   if table.getn(self.statestack) > config.STATESTACKMAXELEM then
       table.remove(self.statestack, 10)
   end
-  self.x = self.x + self.vx
-  self.y = self.y + self.vy
+  self.x = self.x + self.vx*dt*config.DT_RATIO
+  self.y = self.y + self.vy*dt*config.DT_RATIO
 
   if self.y + self.height >= floor_y then
     self.y = floor_y - self.height

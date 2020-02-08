@@ -1,4 +1,4 @@
-require 'config'
+local config = require 'config'
 require "sprites"
 
 local graphics = {}
@@ -6,20 +6,22 @@ local graphics = {}
 local animated_background = {
   quads = back1,
   current_quad=1,
-  speed=10,
+  speed=config.DT_RATIO,
   speed_ind=1,
+  frame_period = 8, -- we want to switch frames 4 times a second
+  cnt_dt = 0,
   x=0,
   y=0
 }
 
 graphics.animated_background = animated_background
 
-function animated_background:update()
-  self.speed_ind = (self.speed_ind + 1) % self.speed
-  if self.speed_ind == 1 then
-    self.current_quad = self.current_quad % table.getn(self.quads)
-    self.current_quad = self.current_quad + 1
-  end
+function animated_background:update(dt)
+  self.cnt_dt = self.cnt_dt + dt
+  self.current_quad = (self.cnt_dt % 1) * self.frame_period
+  self.current_quad = self.current_quad % 4
+  self.current_quad = math.floor(self.current_quad) + 1
+  print(self.current_quad)
 end
 
 function animated_background:draw(x, y)
