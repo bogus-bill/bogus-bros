@@ -44,22 +44,25 @@ end
 
 function game:update_test_mode(dt)
   config.GRAVITYSPEED = game:add_key_control("u", config.GRAVITYSPEED, 0.0001)
-  config.DEC = game:add_key_control("i", config.DEC, 0.0001)
+  config.DEC = game:add_key_control("i", config.DEC, 0.00001)
   config.ACCR = game:add_key_control("o", config.ACCR, 0.0001)
-  config.MAXJUMPSPEED = game:add_key_control("p", config.MAXJUMPSPEED, 0.001)
-  -- config.FRC = game:add_key_control("j", config.MAXJUMPSPEED, 0.001)
+  config.JUMPSPEED = game:add_key_control("p", config.JUMPSPEED, 0.01)
+  config.FRC = game:add_key_control("j", config.FRC, 0.00001)
+  config.MAXSPEED_R = game:add_key_control("k", config.MAXSPEED_R, 0.001)
 
   love.graphics.print(config.GRAVITYSPEED       ,150, 200)
   love.graphics.print(config.DEC                ,150, 220)
   love.graphics.print(config.ACCR               ,150, 240)
-  love.graphics.print(config.MAXJUMPSPEED       ,150, 260)
+  love.graphics.print(config.JUMPSPEED          ,150, 260)
   love.graphics.print(config.FRC                ,150, 280)
+  love.graphics.print(config.MAXSPEED_R         ,150, 300)
 
   love.graphics.print("gravity u"               ,0,   200)
   love.graphics.print("dec i"                   ,0,   220)
   love.graphics.print("accr o"                  ,0,   240)
   love.graphics.print("max jump speed p"        ,0,   260)
-  love.graphics.print("max jump speed p"        ,0,   280)
+  love.graphics.print("friction j"              ,0,   280)
+  love.graphics.print("maxspeedr k"             ,0,   300)
 end
 
 function game:update(dt)
@@ -83,9 +86,15 @@ camera = {
 function camera:center_on(x, y, width, height)
   local object_center  = (x + width/2)
   self.x = object_center - game_width/2
+  self.y = (y + height/2) - game_height/2
 
   self.x = math.max(0, self.x)
   self.x = math.min(self.x, 2000)
+
+  -- self.y = math.max(0, self.y)
+  self.y = math.min(self.y, 0)
+  print(self.y)
+
 end
 
 function camera:update()
@@ -117,7 +126,7 @@ function game:draw()
   if is_collision then
     mode = 'fill'
   end
-  love.graphics.rectangle(mode, rect_x, rect_y, 50, 100)
+  -- love.graphics.rectangle(mode, rect_x, rect_y, 50, 100)
 end
 
 function game:throw_explosion()

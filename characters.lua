@@ -55,10 +55,23 @@ function Player:collide_bbox(x, y, width, height)
     return self.bbox:collide_bbox(x, y, width, height)
 end
 
-function Player:update_speed()
+function Player:apply_friction(vx, dt)
+    if events.pushing_left() or events.pushing_right() then 
+        return vx
+    end
+    if self.friction*dt > math.abs(vx) then
+        vx = 0
+    else
+        vx = (math.abs(vx) - self.friction*dt) * sign(vx) 
+    end
+    return vx
+end
+
+function Player:update_speed(dt)
   local vx = self.vx
   local vy = self.vy
-  local acc = config.ACCR
+  local acc = config.ACCR*dt
+  local dec = config.DEC*dt
 
   self.looking_up, self.looking_down = false, false
 
@@ -93,25 +106,49 @@ function Player:update_speed()
     self.looking_down = true
   end
 
+  vx = self:apply_friction(vx, dt)
+
   if movement == "decelerating" then
-      vx = sign(vx) * (math.abs(vx) - config.DEC)
+    if self:is_on_floor() then
+        vx = sign(vx) * (math.abs(vx) - dec)
+    else
+        vx = sign(vx) * (math.abs(vx) - dec*config.JUMPING_DEC)
+    end
   elseif movement == "accelerating" then
-      vx = sign(vx) * (math.abs(vx) + acc)
+      if math.abs(vx) < self.maxspeed then
+        vx = sign(vx) * (math.abs(vx) + acc)
+      else
+        vx = self.maxspeed * sign(vx)   
+      end
   end
 
-  vx = math.max(math.abs(vx) - self.friction, 0) * sign(vx)
+  print("max speed is", self.maxspeed, vx)
+
+
+--   print("vx - friction is", math.abs(vx) - self.friction)
+ 
+
+--   vx = math.abs(math.abs(vx) - self.friction) * sign(vx)
  
   -- air dragging when above floor
-  --if (not self:is_on_floor())
-  --        -- and vy > -config.MAXJUMPSPEED
-  --        and math.abs(vx) >= config.AIR_DRAG_CONST1 then
-  --    print("applying bullshit", game.frame_cnt)
-  --    if self.is_high_speed_running then
-  --        vx = vx * (0.99)
-  --    else
-  --        vx = vx * config.AIR_DRAG_CONST2
-  --    end
-  --end
+--   if (not self:is_on_floor())
+--          -- and vy > -config.MAXJUMPSPEED
+--          and math.abs(vx) >= config.AIR_DRAG_CONST1 then
+--      print("applying bullshit", game.frame_cnt)
+--      if self.is_high_speed_running then
+--          vx = vx * (0.99)
+--      else
+--          vx = vx * config.AIR_DRAG_CONST2
+--      end
+--   end
+
+--   if not self:is_on_floor() then
+--     dec = dec / 4
+--   else
+--     dec = config.DEC
+--   end
+
+
   -- jumping
   local jump_ok = self.jump_ok -- whether pressing "jump" will trigger jumping
   local jump_flag = self.jump_flag -- whether last jump was acknowledged
@@ -143,12 +180,14 @@ function Player:update_speed()
 
   -- apply gravity force
   if not is_on_floor then
-      vy = self.vy + config.GRAVITYSPEED
+      vy = self.vy + config.GRAVITYSPEED*dt
       vy = math.min(vy, config.MAX_FALLING_SPEED)
   end
 
-  self.vx = math.min(math.abs(vx), self.maxspeed) * sign(vx) -- make sure Player does not go faster than "maxspeed"
+--   self.vx = math.min(math.abs(vx), self.maxspeed) * sign(vx) -- make sure Player does not go faster than "maxspeed"
   self.vy = vy
+  self.vx = vx
+
   self.jump_flag = jump_flag
   self.jump_ok = jump_ok
 end
@@ -241,8 +280,6 @@ function Player:update_quad(dt, frame_cnt)
             switch_time = calculate_switch_time(dt, self.vx, min_rate, max_rate, config.MAXSPEED_HSR)
         end
 
-        print(switch_rate)
-
         if self.quad_time_passed >= switch_time then
             self.quad_time_passed = 0
             if math.abs(self.vx) <= config.MAXSPEED_R then
@@ -297,7 +334,7 @@ end
 function Player:update(dt, frame_cnt)
   self.cnt_dt = self.cnt_dt + 1
   
-  self:update_speed()
+  self:update_speed(dt)
   self:update_sprite_state()
   self:update_quad(dt, frame_cnt)
   self:update_direction()
@@ -338,7 +375,7 @@ end
 function Player:draw(x, y)
     -- if not angle then angle = 0 end
     -- love.graphics.draw(self.texture_atlas, self.current_quad, self.x + self.offsetx + offsetx, self.y + self.offsety + offsety, angle, self.scalex, self.scaley)
-    self.bbox:draw(x, y)
+    if config.DRAW_BBOXES then self.bbox:draw(x, y) end
     love.graphics.draw(self.texture_atlas, self.current_quad, x + self.offsetx, y + self.offsety, 0, self.scalex, self.scaley)
 end
 

@@ -7,7 +7,5 @@ function calculate_switch_time(dt, speed, min_time, max_time, max_speed)
   local speed_ratio = math.abs(speed) / max_speed
   local result = max_time - diff * speed_ratio
 
-  print("diff, ratio, result =", diff, speed_ratio, result)
-
   return result
 end

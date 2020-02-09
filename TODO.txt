@@ -37,7 +37,6 @@ secondary:
 - bob-bombs
 
 
-
 # DONE:
 - add proper jumping for mario
 - add background from image
