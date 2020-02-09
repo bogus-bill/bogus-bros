@@ -62,7 +62,11 @@ function Player:apply_friction(vx, dt)
     if self.friction*dt > math.abs(vx) then
         vx = 0
     else
-        vx = (math.abs(vx) - self.friction*dt) * sign(vx) 
+        if self:is_on_floor() then
+            vx = (math.abs(vx) - self.friction*dt) * sign(vx) 
+        else
+            vx = (math.abs(vx) - self.friction*dt*0.5) * sign(vx) 
+        end
     end
     return vx
 end
@@ -106,7 +110,6 @@ function Player:update_speed(dt)
     self.looking_down = true
   end
 
-  vx = self:apply_friction(vx, dt)
 
   if movement == "decelerating" then
     if self:is_on_floor() then
@@ -120,10 +123,12 @@ function Player:update_speed(dt)
       else
         vx = self.maxspeed * sign(vx)   
       end
-  end
-
-  print("max speed is", self.maxspeed, vx)
-
+  else
+    print("what is up??", self.vx, self.maxspeed)
+    print("vx before", vx)
+    vx = self:apply_friction(vx, dt)
+    print("vx after", vx)
+end
 
 --   print("vx - friction is", math.abs(vx) - self.friction)
  
@@ -318,7 +323,7 @@ function Player:process_high_speed_running(dt)
                 -- self.maxspeed_r = config.MAXSPEED_HSR
                 self:set_maxspeed_r(config.MAXSPEED_HSR)
                 self.jumpspeed = config.JUMPSPEED * 1.3
-                self.friction = 0
+                self.friction = config.FRC
             end
         else
             -- self.maxspeed_r = config.MAXSPEED_R

@@ -9,7 +9,7 @@ local KEYS={
 }
 
 local config = {
-  ACCR=0.13*400,
+  ACCR=0.13*300,
   DEC=0.02513*600,
   JUMPING_DEC=1.5,
   ACCW=0.7,
@@ -17,7 +17,7 @@ local config = {
   MAXSPEED_R=1.4*2*2,          -- max regular running speed
   MAXSPEED_HSR=1.4*(12/7)*1.5*2, -- max high speed running speed
   TIME_UNTIL_HS_RUNNING=0.8,    -- how many frames while runnig at MAXSPEED_R until reaching high speed running
-  FRC=0.015*300,
+  FRC=0.015*600,
   AIR_DRAG_CONST1=0.125,
   AIR_DRAG_CONST2=0.96875,
   MAX_FALLING_SPEED=12,
