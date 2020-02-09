@@ -38,7 +38,8 @@ function Player:new(x, y, width, height, vx, vy)
     maxspeed_w = config.MAXSPEED_W,
     jumpspeed = config.JUMPSPEED,
     friction = config.FRC,
-    frames_on_maxspeed = 0,
+    time_on_maxspeed = 0,
+    cnt_dt = 0,
     bbox = physics.Bbox:new(x, y, width, height),
 }
   setmetatable(obj, {__index = Player})
@@ -245,14 +246,15 @@ function Player:update_quad(dt, frame_cnt)
         end
     end
 end
-function Player:process_high_speed_running()
+
+function Player:process_high_speed_running(dt)
     -- high speed running means player has been running over MAXSPEED_R
     -- for a certain amount of frames thus we switch to high speed running
     -- print("frames on high", self.frames_on_maxspeed, game.frame_cnt, self.vx)
     if self:is_on_floor() then
         if math.abs(self.vx) >= config.MAXSPEED_R then
-            self.frames_on_maxspeed = self.frames_on_maxspeed + 1
-            if self.frames_on_maxspeed >= config.FRAMES_UNTIL_HS_RUNNING then
+            self.time_on_maxspeed = self.time_on_maxspeed + dt
+            if self.time_on_maxspeed >= config.TIME_UNTIL_HS_RUNNING then
                 self.is_high_speed_running = true
                 self.maxspeed_r = config.MAXSPEED_HSR
                 self.jumpspeed = config.JUMPSPEED * 1.3
@@ -261,7 +263,7 @@ function Player:process_high_speed_running()
         else
             self.maxspeed_r = config.MAXSPEED_R
             self.jumpspeed = config.JUMPSPEED
-            self.frames_on_maxspeed = 0
+            self.time_on_maxspeed = 0
             self.is_high_speed_running= false
             self.friction = config.FRC
         end
@@ -269,11 +271,13 @@ function Player:process_high_speed_running()
 end
 
 function Player:update(dt, frame_cnt)
+  self.cnt_dt = self.cnt_dt + 1
+  
   self:update_speed()
   self:update_sprite_state()
   self:update_quad(dt, frame_cnt)
   self:update_direction()
-  self:process_high_speed_running()
+  self:process_high_speed_running(dt)
   self.bbox:update_coordinates(self.x, self.y)
 
   local statestack_elem = {
