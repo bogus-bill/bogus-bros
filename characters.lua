@@ -35,14 +35,17 @@ function Player:new(x, y, width, height, vx, vy)
     statestack = {},
     is_high_speed_running = false,
     maxspeed_r = config.MAXSPEED_R,
-    maxspeed_w = config.MAXSPEED_W,
+    -- maxspeed_w = config.MAXSPEED_W,
     jumpspeed = config.JUMPSPEED,
     friction = config.FRC,
     time_on_maxspeed = 0,
     cnt_dt = 0,
+    quad_time_passed = 0,
     bbox = physics.Bbox:new(x, y, width, height),
 }
   setmetatable(obj, {__index = Player})
+
+  obj:set_maxspeed_r(config.MAXSPEED_R)
 
   self = obj
   return obj
@@ -97,7 +100,7 @@ function Player:update_speed()
   end
 
   vx = math.max(math.abs(vx) - self.friction, 0) * sign(vx)
-
+ 
   -- air dragging when above floor
   --if (not self:is_on_floor())
   --        -- and vy > -config.MAXJUMPSPEED
@@ -141,7 +144,7 @@ function Player:update_speed()
   -- apply gravity force
   if not is_on_floor then
       vy = self.vy + config.GRAVITYSPEED
-      vy = math.min(vy, 6)
+      vy = math.min(vy, config.MAX_FALLING_SPEED)
   end
 
   self.vx = math.min(math.abs(vx), self.maxspeed) * sign(vx) -- make sure Player does not go faster than "maxspeed"
@@ -228,23 +231,42 @@ function Player:update_quad(dt, frame_cnt)
     elseif math.abs(self.vx) == 0 then
         self.current_quad = still_mario_quad
     elseif math.abs(self.vx) > 0 and y_distance == 0 then
-        local switch_rate
-        local min_rate, max_rate = 5, 9
+        local switch_time
+        local min_rate, max_rate = 0.05, 0.1
         if self.sprite_state == "walking" then
-            switch_rate = calculate_switch_rate(self.vx, min_rate, max_rate, config.MAXSPEED_W)
+            switch_time = calculate_switch_time(dt, self.vx, min_rate, max_rate, config.MAXSPEED_W)
         elseif self.sprite_state == "running" then
-            switch_rate = calculate_switch_rate(self.vx, min_rate, max_rate, config.MAXSPEED_R)
+            switch_time = calculate_switch_time(dt, self.vx, min_rate, max_rate, config.MAXSPEED_R)
         elseif self.sprite_state == "highspeed_running" then
-            switch_rate = calculate_switch_rate(self.vx, min_rate-2, max_rate-4, config.MAXSPEED_HSR)
+            switch_time = calculate_switch_time(dt, self.vx, min_rate, max_rate, config.MAXSPEED_HSR)
         end
-        if frame_cnt % switch_rate == 0 then
+
+        print(switch_rate)
+
+        if self.quad_time_passed >= switch_time then
+            self.quad_time_passed = 0
             if math.abs(self.vx) <= config.MAXSPEED_R then
                 self.current_quad = walking_sprites:next()
             else
                 self.current_quad = hs_running_sprites:next()
             end
         end
+        self.quad_time_passed = self.quad_time_passed + dt
+        -- self.current_quad = (self.cnt_dt % 1) * switch_rate
+
+        -- if frame_cnt % switch_rate == 0 then
+        --     if math.abs(self.vx) <= config.MAXSPEED_R then
+        --         self.current_quad = walking_sprites:next()
+        --     else
+        --         self.current_quad = hs_running_sprites:next()
+        --     end
+        -- end
     end
+end
+
+function Player:set_maxspeed_r(value)
+    self.maxspeed_r = value
+    self.maxspeed_w = value * 0.7
 end
 
 function Player:process_high_speed_running(dt)
@@ -256,12 +278,14 @@ function Player:process_high_speed_running(dt)
             self.time_on_maxspeed = self.time_on_maxspeed + dt
             if self.time_on_maxspeed >= config.TIME_UNTIL_HS_RUNNING then
                 self.is_high_speed_running = true
-                self.maxspeed_r = config.MAXSPEED_HSR
+                -- self.maxspeed_r = config.MAXSPEED_HSR
+                self:set_maxspeed_r(config.MAXSPEED_HSR)
                 self.jumpspeed = config.JUMPSPEED * 1.3
                 self.friction = 0
             end
         else
-            self.maxspeed_r = config.MAXSPEED_R
+            -- self.maxspeed_r = config.MAXSPEED_R
+            self:set_maxspeed_r(config.MAXSPEED_R)
             self.jumpspeed = config.JUMPSPEED
             self.time_on_maxspeed = 0
             self.is_high_speed_running= false

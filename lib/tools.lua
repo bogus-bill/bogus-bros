@@ -2,29 +2,12 @@ function sign(x)
   return (x<0 and -1) or 1
 end
 
-function calculate_switch_rate(speed, min_rate, max_rate, max_speed)
-  local space = max_rate - min_rate
+function calculate_switch_time(dt, speed, min_time, max_time, max_speed)
+  local diff = max_time - min_time
+  local speed_ratio = math.abs(speed) / max_speed
+  local result = max_time - diff * speed_ratio
 
-  local switch_rate = max_rate - space * (math.abs(speed) / max_speed)
-  switch_rate = math.floor(switch_rate)
+  print("diff, ratio, result =", diff, speed_ratio, result)
 
-  return switch_rate
+  return result
 end
-
-LinkedList = {}
-
-function LinkedList.new(max_length)
-  local obj = {
-    data = {},
-    max_length=max_length
-  }
-  setmetatable(obj, {__index=LinkedList})
-  return obj
-end
-
-function LinkedList:push(item)
-  if next(self.data) == nil then
-    print("empty")
-  end
-end
-

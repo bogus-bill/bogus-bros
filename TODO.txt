@@ -7,6 +7,7 @@
 
 secondary:
 
+- slow-motion 
 - missile tete chercheuse
 - bat baseball
 - 2 players game with fireballs
@@ -35,9 +36,6 @@ secondary:
 - fireballs that destroy walls
 - bob-bombs
 
-
-IDEE QUI TUE:
-    - faire ralentit ! : et pouvoir le faire par exemple que quand on sait qu'on va s'approcher d'un truc cool (etoile, champignon, etc...). Parait pas mal!
 
 
 # DONE:
