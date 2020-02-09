@@ -31,6 +31,34 @@ function game:init()
   self.luna = objects.Luna.new()
 end
 
+function game:add_key_control(key, value, step)
+  if love.keyboard.isDown(key) then
+    if love.keyboard.isDown("lshift") then
+      value = value - step
+    else
+      value = value + step
+    end
+  end
+  return value
+end
+
+function game:update_test_mode(dt)
+  config.GRAVITYSPEED = game:add_key_control("u", config.GRAVITYSPEED, 0.0001)
+  config.DEC = game:add_key_control("i", config.DEC, 0.0001)
+  config.ACCR = game:add_key_control("o", config.ACCR, 0.0001)
+  config.MAXJUMPSPEED = game:add_key_control("p", config.MAXJUMPSPEED, 0.001)
+
+  love.graphics.print(config.GRAVITYSPEED         ,150, 200)
+  love.graphics.print(config.DEC                  ,150, 230)
+  love.graphics.print(config.ACCR                 ,150, 260)
+  love.graphics.print(config.MAXJUMPSPEED         ,150, 300)
+
+  love.graphics.print("gravity b"               ,0, 200)
+  love.graphics.print("dec h"                   ,0, 230)
+  love.graphics.print("accr y"                  ,0, 260)
+  love.graphics.print("max jump speed k"        ,0,  300)
+end
+
 function game:update(dt)
   if events:pushing_reset() then
     self.player.x, self.player.y = self:get_resolution()

@@ -6,7 +6,6 @@ local graphics = {}
 local animated_background = {
   quads = back1,
   current_quad=1,
-  speed=config.DT_RATIO,
   speed_ind=1,
   frame_period = 8, -- we want to switch frames 4 times a second
   cnt_dt = 0,
@@ -21,7 +20,6 @@ function animated_background:update(dt)
   self.current_quad = (self.cnt_dt % 1) * self.frame_period
   self.current_quad = self.current_quad % 4
   self.current_quad = math.floor(self.current_quad) + 1
-  print(self.current_quad)
 end
 
 function animated_background:draw(x, y)

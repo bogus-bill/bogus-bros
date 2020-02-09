@@ -26,6 +26,4 @@ function events:pushing_reset()
   return love.keyboard.isDown(config.KEYS.RESET)
 end
 
-
-
 return events

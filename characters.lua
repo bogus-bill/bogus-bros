@@ -255,7 +255,7 @@ function Player:process_high_speed_running()
             if self.frames_on_maxspeed >= config.FRAMES_UNTIL_HS_RUNNING then
                 self.is_high_speed_running = true
                 self.maxspeed_r = config.MAXSPEED_HSR
-                self.jumpspeed = config.JUMPSPEED_HSR
+                self.jumpspeed = config.JUMPSPEED * 1.3
                 self.friction = 0
             end
         else
