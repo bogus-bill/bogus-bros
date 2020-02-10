@@ -35,6 +35,7 @@ secondary:
 - evil mario
 - fireballs that destroy walls
 - bob-bombs
+- add flying enemies with sinusodial movement just like in shoot-them-ups
 
 
 # DONE:
