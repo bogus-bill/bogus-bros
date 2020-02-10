@@ -24,12 +24,18 @@ end
 
 function animated_background:draw(x, y)
   -- draw background 3 times at [-width, 0, +width] for scrolling
-  local draw_at = {block_width, 0, -block_width}
-  for _, offset in pairs(draw_at) do
-    local xpos = x % block_width + offset
-    local ypos = y
-    love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos)
+  local draw_at_x = {block_width, 0, -block_width}
+  local draw_at_y = {block_height, 0, -block_height}
+  for _, offset_x in pairs(draw_at_x) do
+    for _, offset_y in pairs(draw_at_y) do
+      local xpos = x % block_width + offset_x
+      local ypos = y % block_height + offset_y
+      love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos)
+    end
   end
 end
+
+local Simpleanim = {}
+setmetatable(Simpleanim, {__index=Drawable})
 
 return graphics

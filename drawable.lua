@@ -1,9 +1,8 @@
-require 'config'
 
-local drawable = {}
+Drawable = {}
 
-function drawable:draw()
+function Drawable:draw()
   love.graphics.draw(self.texture_atlas, self.current_quad, self.x, self.y, 0, self.scalex, self.scaley)
 end
 
-return drawable
+return Drawable

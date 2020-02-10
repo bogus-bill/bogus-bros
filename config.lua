@@ -38,7 +38,8 @@ local config = {
   },
   DT_RATIO=60,
   STATESTACKMAXELEM=20,
-  DRAW_BBOXES = true,
+  DRAW_BBOXES=true,
+  CAMERA_SHAKE={RANDOM=0.2, PERLIN=0.1},
 }
 
 return config

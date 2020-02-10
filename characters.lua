@@ -2,11 +2,7 @@ require 'lib/tools'
 
 local config = require "config"
 local game = require "game"
-
-Drawable = {}
-function Drawable:draw()
-  love.graphics.draw(self.texture_atlas, self.current_quad, self.x, self.y, 0, self.scalex, self.scaley)
-end
+local Drawable = require "lib/drawable"
 
 local events = require "events"
 local floor_x, floor_y = game:get_resolution()
@@ -15,7 +11,7 @@ local characters = {}
 require "sprites"
 local physics = require "lib/physics"
 
-Player = {}
+local Player = {}
 setmetatable(Player, {__index=Drawable})
 
 function Player:new(x, y, width, height, vx, vy)
@@ -56,16 +52,16 @@ function Player:collide_bbox(x, y, width, height)
 end
 
 function Player:apply_friction(vx, dt)
-    if events.pushing_left() or events.pushing_right() then 
+    if events.pushing_left() or events.pushing_right() then
         return vx
     end
     if self.friction*dt > math.abs(vx) then
         vx = 0
     else
         if self:is_on_floor() then
-            vx = (math.abs(vx) - self.friction*dt) * sign(vx) 
+            vx = (math.abs(vx) - self.friction*dt) * sign(vx)
         else
-            vx = (math.abs(vx) - self.friction*dt*0.5) * sign(vx) 
+            vx = (math.abs(vx) - self.friction*dt*0.5) * sign(vx)
         end
     end
     return vx
@@ -121,7 +117,7 @@ function Player:update_speed(dt)
       if math.abs(vx) < self.maxspeed then
         vx = sign(vx) * (math.abs(vx) + acc)
       else
-        vx = self.maxspeed * sign(vx)   
+        vx = self.maxspeed * sign(vx)
       end
   else
     print("what is up??", self.vx, self.maxspeed)
@@ -131,10 +127,10 @@ function Player:update_speed(dt)
 end
 
 --   print("vx - friction is", math.abs(vx) - self.friction)
- 
+
 
 --   vx = math.abs(math.abs(vx) - self.friction) * sign(vx)
- 
+
   -- air dragging when above floor
 --   if (not self:is_on_floor())
 --          -- and vy > -config.MAXJUMPSPEED
@@ -253,21 +249,52 @@ function Player:get_y_distance()
     end
     return 0
 end
+
+function Player:choose_falling_sprite()
+    if self.is_high_speed_running then
+        self.current_quad = jumping_high_speed_mario_quad
+    else
+        self.current_quad = falling_mario_quad
+    end
+end
+
+function Player:choose_jumping_sprite()
+    if self.is_high_speed_running then
+        self.current_quad = jumping_high_speed_mario_quad
+    else
+        self.current_quad = jumping_mario_quad
+    end
+end
+
+local speed_match = {
+    walking=config.MAXSPEED_W,
+    running=config.MAXSPEED_R,
+    highspeed_running=config.MAXSPEED_HSR,
+}
+
+function Player:choose_walking_sprite(min_rate, max_rate, dt)
+    local switch_time
+    local sprite_speed = speed_match[self.sprite_state]
+    switch_time = calculate_switch_time(dt, self.vx, min_rate, max_rate, sprite_speed)
+
+    if self.quad_time_passed >= switch_time then
+        self.quad_time_passed = 0
+        if math.abs(self.vx) <= config.MAXSPEED_R then
+            self.current_quad = walking_sprites:next()
+        else
+            self.current_quad = hs_running_sprites:next()
+        end
+    end
+    self.quad_time_passed = self.quad_time_passed + dt
+end
+
 function Player:update_quad(dt, frame_cnt)
     local y_distance = self:get_y_distance()
 
     if self:is_falling() then
-        if self.is_high_speed_running then
-            self.current_quad = jumping_high_speed_mario_quad
-        else
-            self.current_quad = falling_mario_quad
-        end
+        self:choose_falling_sprite()
     elseif self:is_jumping() then
-        if self.is_high_speed_running then
-            self.current_quad = jumping_high_speed_mario_quad
-        else
-            self.current_quad = jumping_mario_quad
-        end
+        self:choose_jumping_sprite()
     elseif self.looking_up then
         self.current_quad = lookingup_mario_quad
     elseif self.looking_down then
@@ -275,34 +302,8 @@ function Player:update_quad(dt, frame_cnt)
     elseif math.abs(self.vx) == 0 then
         self.current_quad = still_mario_quad
     elseif math.abs(self.vx) > 0 and y_distance == 0 then
-        local switch_time
         local min_rate, max_rate = 0.05, 0.1
-        if self.sprite_state == "walking" then
-            switch_time = calculate_switch_time(dt, self.vx, min_rate, max_rate, config.MAXSPEED_W)
-        elseif self.sprite_state == "running" then
-            switch_time = calculate_switch_time(dt, self.vx, min_rate, max_rate, config.MAXSPEED_R)
-        elseif self.sprite_state == "highspeed_running" then
-            switch_time = calculate_switch_time(dt, self.vx, min_rate, max_rate, config.MAXSPEED_HSR)
-        end
-
-        if self.quad_time_passed >= switch_time then
-            self.quad_time_passed = 0
-            if math.abs(self.vx) <= config.MAXSPEED_R then
-                self.current_quad = walking_sprites:next()
-            else
-                self.current_quad = hs_running_sprites:next()
-            end
-        end
-        self.quad_time_passed = self.quad_time_passed + dt
-        -- self.current_quad = (self.cnt_dt % 1) * switch_rate
-
-        -- if frame_cnt % switch_rate == 0 then
-        --     if math.abs(self.vx) <= config.MAXSPEED_R then
-        --         self.current_quad = walking_sprites:next()
-        --     else
-        --         self.current_quad = hs_running_sprites:next()
-        --     end
-        -- end
+        self:choose_walking_sprite(min_rate, max_rate, dt)
     end
 end
 
@@ -338,7 +339,7 @@ end
 
 function Player:update(dt, frame_cnt)
   self.cnt_dt = self.cnt_dt + 1
-  
+
   self:update_speed(dt)
   self:update_sprite_state()
   self:update_quad(dt, frame_cnt)
@@ -358,6 +359,7 @@ function Player:update(dt, frame_cnt)
       offsetx=self.offsetx,
       offsety=self.offsety,
   }
+
   table.insert(self.statestack, 1, statestack_elem)
   if table.getn(self.statestack) > config.STATESTACKMAXELEM then
       table.remove(self.statestack, 10)
@@ -368,13 +370,6 @@ function Player:update(dt, frame_cnt)
   if self.y + self.height >= floor_y then
     self.y = floor_y - self.height
   end
-
-  if love.keyboard.isDown("m") then
-    local angle, offx, offy = shake_camera()
-    camera.x = camera.x + offx
-    camera.y = camera.y + offy
-  end
-
 end
 
 function Player:draw(x, y)

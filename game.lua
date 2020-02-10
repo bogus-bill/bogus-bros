@@ -43,12 +43,13 @@ function game:add_key_control(key, value, step)
 end
 
 function game:update_test_mode(dt)
-  config.GRAVITYSPEED = game:add_key_control("u", config.GRAVITYSPEED, 0.0001)
-  config.DEC = game:add_key_control("i", config.DEC, 0.00001)
-  config.ACCR = game:add_key_control("o", config.ACCR, 0.0001)
+  config.GRAVITYSPEED = game:add_key_control("u", config.GRAVITYSPEED, 0.1)
+  config.DEC = game:add_key_control("i", config.DEC, 0.01)
+  config.ACCR = game:add_key_control("o", config.ACCR, 0.1)
   config.JUMPSPEED = game:add_key_control("p", config.JUMPSPEED, 0.01)
-  config.FRC = game:add_key_control("j", config.FRC, 0.00001)
-  config.MAXSPEED_R = game:add_key_control("k", config.MAXSPEED_R, 0.001)
+  config.FRC = game:add_key_control("j", config.FRC, 0.01)
+  config.MAXSPEED_R = game:add_key_control("k", config.MAXSPEED_R, 0.1)
+  config.CAMERA_SHAKE["RANDOM"] = game:add_key_control("l", config.CAMERA_SHAKE["RANDOM"], 0.001)
 
   love.graphics.print(config.GRAVITYSPEED       ,150, 200)
   love.graphics.print(config.DEC                ,150, 220)
@@ -56,6 +57,7 @@ function game:update_test_mode(dt)
   love.graphics.print(config.JUMPSPEED          ,150, 260)
   love.graphics.print(config.FRC                ,150, 280)
   love.graphics.print(config.MAXSPEED_R         ,150, 300)
+  love.graphics.print(config.CAMERA_SHAKE["RANDOM"]         ,150, 320)
 
   love.graphics.print("gravity u"               ,0,   200)
   love.graphics.print("dec i"                   ,0,   220)
@@ -63,6 +65,7 @@ function game:update_test_mode(dt)
   love.graphics.print("max jump speed p"        ,0,   260)
   love.graphics.print("friction j"              ,0,   280)
   love.graphics.print("maxspeedr k"             ,0,   300)
+  love.graphics.print("camera shake l"             ,0,   320)
 end
 
 function game:update(dt)
@@ -109,28 +112,36 @@ function camera:to_screen_position(x, y)
   return x-self.x, y-self.y
 end
 
+game.ennemies = {}
+game.effects = {}
+
+function game:draw_all()
+  if love.keyboard.isDown("m") then
+    local angle, offx, offy = shake_camera()
+    camera.x = camera.x + offx
+    camera.y = camera.y + offy
+  end
+  -- local drawables = {self.animated_background, self.effects, self.ennemies, self.player}
+
+  local drawables = {self.animated_background, self.player}
+
+  for _, object in pairs(drawables) do
+      local obj_x, obj_y = camera:to_screen_position(object.x, object.y)
+      object:draw(obj_x, obj_y)
+  end
+end
+
 function game:draw()
-  local player = self.player
-
-  local player_x, player_y = camera:to_screen_position(self.player.x, self.player.y)
-  local back_x, back_y = camera:to_screen_position(self.animated_background.x, self.animated_background.y)
-  local rect_x, rect_y = camera:to_screen_position(300, 300)
-
+  self:draw_all()
   -- offx, offy, angle = shake_camera()
 
-  self.animated_background:draw(back_x, back_y)
-  self.player:draw(player_x, player_y)
-
-  local mode = 'line'
-  local is_collision = self.player:collide_bbox(300, 300, 50, 100)
-  if is_collision then
-    mode = 'fill'
-  end
+  -- local mode = 'line'
+  -- local is_collision = self.player:collide_bbox(300, 300, 50, 100)
+  -- if is_collision then
+  --   mode = 'fill'
+  -- end
   -- love.graphics.rectangle(mode, rect_x, rect_y, 50, 100)
 end
 
-function game:throw_explosion()
-  
-end
 
 return game
