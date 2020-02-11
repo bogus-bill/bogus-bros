@@ -40,6 +40,7 @@ local config = {
   STATESTACKMAXELEM=20,
   DRAW_BBOXES=true,
   CAMERA_SHAKE={RANDOM=0.2, PERLIN=0.1},
+  CAMERA_LAZY_FOLLOW={value=0.90},
 }
 
 return config

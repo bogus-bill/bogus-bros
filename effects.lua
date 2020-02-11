@@ -32,8 +32,10 @@ end
 
 function shake_camera()
   local angle = MAXANGLE * config.CAMERA_SHAKE.RANDOM * get_random_float()
-  local offsetx = maxoffset * config.CAMERA_SHAKE.RANDOM * get_random_float()
+  -- local offsetx = maxoffset * config.CAMERA_SHAKE.RANDOM * get_random_float()
   local offsety = maxoffset * config.CAMERA_SHAKE.RANDOM * get_random_float()
+
+  local offsetx = 0
 
   print(angle, offsetx, offsety)
   return angle, offsetx, offsety

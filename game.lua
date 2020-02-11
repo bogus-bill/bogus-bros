@@ -50,22 +50,24 @@ function game:update_test_mode(dt)
   config.FRC = game:add_key_control("j", config.FRC, 0.01)
   config.MAXSPEED_R = game:add_key_control("k", config.MAXSPEED_R, 0.1)
   config.CAMERA_SHAKE["RANDOM"] = game:add_key_control("l", config.CAMERA_SHAKE["RANDOM"], 0.001)
-
-  love.graphics.print(config.GRAVITYSPEED       ,150, 200)
-  love.graphics.print(config.DEC                ,150, 220)
-  love.graphics.print(config.ACCR               ,150, 240)
-  love.graphics.print(config.JUMPSPEED          ,150, 260)
-  love.graphics.print(config.FRC                ,150, 280)
-  love.graphics.print(config.MAXSPEED_R         ,150, 300)
+  config.CAMERA_LAZY_FOLLOW["value"] = game:add_key_control("g", config.CAMERA_LAZY_FOLLOW["value"], 0.001)
+  love.graphics.print(config.GRAVITYSPEED                   ,150, 200)
+  love.graphics.print(config.DEC                            ,150, 220)
+  love.graphics.print(config.ACCR                           ,150, 240)
+  love.graphics.print(config.JUMPSPEED                      ,150, 260)
+  love.graphics.print(config.FRC                            ,150, 280)
+  love.graphics.print(config.MAXSPEED_R                     ,150, 300)
   love.graphics.print(config.CAMERA_SHAKE["RANDOM"]         ,150, 320)
+  love.graphics.print(config.CAMERA_LAZY_FOLLOW["value"]    ,150, 340)
 
-  love.graphics.print("gravity u"               ,0,   200)
-  love.graphics.print("dec i"                   ,0,   220)
-  love.graphics.print("accr o"                  ,0,   240)
-  love.graphics.print("max jump speed p"        ,0,   260)
-  love.graphics.print("friction j"              ,0,   280)
-  love.graphics.print("maxspeedr k"             ,0,   300)
-  love.graphics.print("camera shake l"             ,0,   320)
+  love.graphics.print("gravity u"                           ,0,   200)
+  love.graphics.print("dec i"                               ,0,   220)
+  love.graphics.print("accr o"                              ,0,   240)
+  love.graphics.print("max jump speed p"                    ,0,   260)
+  love.graphics.print("friction j"                          ,0,   280)
+  love.graphics.print("maxspeedr k"                         ,0,   300)
+  love.graphics.print("camera shake l"                      ,0,   320)
+  love.graphics.print("camera lazy follow"                  ,0,   340)
 end
 
 function game:update(dt)
@@ -78,7 +80,8 @@ function game:update(dt)
 
   local player = self.player
 
-  camera:center_on(player.x, player.y, player.width, player.height)
+  -- camera:center_on(player.x, player.y, player.width, player.height)
+  camera:follow_lazily(player.x, player.y, player.width, player.height)
 end
 
 camera = {
@@ -86,8 +89,21 @@ camera = {
   y = 0,
 }
 
+function camera:follow_lazily(x, y, width, height)
+  local object_centerx, object_centery = (x + width/2), (y + height/2)
+  local ideal_x = object_centerx - game_width/2
+  local ideal_y = object_centery - game_height/2
+
+  self.x = self.x*config.CAMERA_LAZY_FOLLOW["value"] + ideal_x*(1.0-config.CAMERA_LAZY_FOLLOW["value"])
+  self.y = self.y*0.90 + ideal_y*0.10
+
+  self.x = math.max(0, self.x)
+  self.x = math.min(self.x, 2000)
+  self.y = math.min(self.y, 0)
+end
+
 function camera:center_on(x, y, width, height)
-  local object_center  = (x + width/2)
+  local object_center = (x + width/2)
   self.x = object_center - game_width/2
   self.y = (y + height/2) - game_height/2
 
@@ -96,8 +112,6 @@ function camera:center_on(x, y, width, height)
 
   -- self.y = math.max(0, self.y)
   self.y = math.min(self.y, 0)
-  print(self.y)
-
 end
 
 function camera:update()

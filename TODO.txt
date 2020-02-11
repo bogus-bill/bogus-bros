@@ -1,6 +1,5 @@
 - add tilemap to add tiles (objets, walls, ...)
 - add scrolling of tilemap
-- add camera
 - add Perlin noise and cubic asymptotic for camera
 - make portalsss
 - make slow-motion matrix like
