@@ -3,6 +3,7 @@ local events = events or require "events"
 local config = config or require "config"
 local objects = require "objects"
 local physics = require "lib/physics"
+local Drawable = require "lib/drawable"
 
 local game = {}
 
@@ -12,6 +13,30 @@ game.frame_cnt = 0
 game.animated_background = graphics.animated_background
 
 require "effects"
+
+local throwables = {}
+
+local Rect = {
+  x=0,
+  y=0,
+  width = 5,
+  height = 5,
+}
+
+function Rect.new(x, y)
+  local obj = {x=x, y=y}
+  setmetatable(obj, {__index=Rect})
+  return obj
+end
+
+function Rect:draw()
+  love.graphics.rectangle(self.x, self.y, self.width, self.height)
+end
+
+function Rect:update()
+  -- self.x = self.x + 10
+  -- self.y = self.y + 10
+end
 
 function game:get_coordinates()
   -- fit mario in the middle of the screen
@@ -30,11 +55,14 @@ function game:init()
   self.animated = {}
   self.luna = objects.Luna.new()
   self.slow_motion = false
+
+  self:throw_rectangle(rect)
+
 end
 
 function game:add_key_control(key, value, step)
   if love.keyboard.isDown(key) then
-    if love.keyboard.isDown("lshift") then
+    if love.keyboard.isDown("lctrl") then
       value = value - step
     else
       value = value + step
@@ -43,12 +71,18 @@ function game:add_key_control(key, value, step)
   return value
 end
 
+
+function game:throw_rectangle()
+  local rect = Rect.new(self.player.x, self.player.y)
+  table.insert(throwables, rect)
+end
+
 function game:update_test_mode(dt)
   config.GRAVITYSPEED = game:add_key_control("u", config.GRAVITYSPEED, 0.1)
-  config.DEC = game:add_key_control("i", config.DEC, 0.01)
+  config.DEC = game:add_key_control("i", config.DEC, 0.2)
   config.ACCR = game:add_key_control("o", config.ACCR, 0.1)
   config.JUMPSPEED = game:add_key_control("p", config.JUMPSPEED, 0.01)
-  config.FRC = game:add_key_control("j", config.FRC, 0.01)
+  config.FRC = game:add_key_control("j", config.FRC, 0.2)
   config.MAXSPEED_R = game:add_key_control("k", config.MAXSPEED_R, 0.1)
   config.CAMERA_SHAKE["PERLIN"] = game:add_key_control("l", config.CAMERA_SHAKE["PERLIN"], 0.01)
   config.CAMERA_LAZY_FOLLOW["value"] = game:add_key_control("g", config.CAMERA_LAZY_FOLLOW["value"], 0.001)
@@ -70,8 +104,8 @@ function game:update_test_mode(dt)
   love.graphics.print("friction j"                                         ,0,   280-200)
   love.graphics.print("maxspeedr k"                                        ,0,   300-200)
   love.graphics.print("camera shake l"                                     ,0,   320-200)
-  love.graphics.print("camera lazy follow"                                 ,0,   340-200)
-  love.graphics.print('camera shake MAX_X'                                 ,0,   360-200)
+  love.graphics.print("camera lazy follow g"                                 ,0,   340-200)
+  love.graphics.print('camera shake MAX_X f'                                 ,0,   360-200)
 end
 
 function game:update(dt)
@@ -80,6 +114,11 @@ function game:update(dt)
   end
   self.player:update(dt, self.frame_cnt)
   self.animated_background:update(dt, self.frame_cnt)
+  
+  for _, th in pairs(throwables) do
+    th.update()
+  end
+
   self.frame_cnt = self.frame_cnt + 1
 
   local player = self.player
@@ -162,10 +201,11 @@ function game:draw()
   local mode = 'line'
   local is_collision = self.player:collide_bbox(rect.x, rect.y, rect.width, rect.height)
   if is_collision then
-    local a = (frame_number*config.CAMERA_SHAKE.PERLIN) % 300
+    local a = (frame_number*config.CAMERA_SHAKE.PERLIN*config.CAMERA_SHAKE.MAX_X) % 1000
     local x = samplePerlin(a/20.0, slope_1)
     local y = samplePerlin(a/20.0, slope_2)
-    love.graphics.setColor(1, (x+1)/2, (x+1)/2)
+    local formula = (x+1) / 2.0
+    love.graphics.setColor(1, formula, formula)
     mode = 'line'
     self.slow_motion = true
   else

@@ -33,7 +33,7 @@ slope_2 = {}
 slope_3 = {}
 
 
-for i = -1, 100 do
+for i = -1, 1000 do
   slope_1[i] = math.random()*2.0 - 1.0
   slope_2[i] = math.random()*2.0 - 1.0
   slope_3[i] = math.random()*2.0 - 1.0
@@ -54,8 +54,9 @@ function samplePerlin(x, slope_obj)
 end
 
 function shake_camera_perlin(frame_number)
-  local x = (frame_number*config.CAMERA_SHAKE.PERLIN) % 300
-  x = x / 20.0
+  local divider = 20.0
+  local x = (frame_number*config.CAMERA_SHAKE.PERLIN) % (1000*math.floor(divider))
+  x = x / divider
   local perlin = samplePerlin(x, slope_1)
   local perlin2 = samplePerlin(x, slope_2)
 

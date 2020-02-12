@@ -9,7 +9,7 @@ background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario
 local back_height_1 = 18
 local back_height_2 = 18+block_height+6
 local back_height_3 = 18+(block_height+6)*11
-local back_height_5 = 18+(block_height+6)*10
+local back_height_5 = 16+(block_height+6)*10
 
 back1 = {
   love.graphics.newQuad(7, back_height_1, block_width, block_height, background_atlas:getDimensions()),
