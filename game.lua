@@ -50,25 +50,28 @@ function game:update_test_mode(dt)
   config.JUMPSPEED = game:add_key_control("p", config.JUMPSPEED, 0.01)
   config.FRC = game:add_key_control("j", config.FRC, 0.01)
   config.MAXSPEED_R = game:add_key_control("k", config.MAXSPEED_R, 0.1)
-  config.CAMERA_SHAKE["RANDOM"] = game:add_key_control("l", config.CAMERA_SHAKE["RANDOM"], 0.001)
+  config.CAMERA_SHAKE["PERLIN"] = game:add_key_control("l", config.CAMERA_SHAKE["PERLIN"], 0.01)
   config.CAMERA_LAZY_FOLLOW["value"] = game:add_key_control("g", config.CAMERA_LAZY_FOLLOW["value"], 0.001)
-  love.graphics.print(config.GRAVITYSPEED                   ,150, 200)
-  love.graphics.print(config.DEC                            ,150, 220)
-  love.graphics.print(config.ACCR                           ,150, 240)
-  love.graphics.print(config.JUMPSPEED                      ,150, 260)
-  love.graphics.print(config.FRC                            ,150, 280)
-  love.graphics.print(config.MAXSPEED_R                     ,150, 300)
-  love.graphics.print(config.CAMERA_SHAKE["RANDOM"]         ,150, 320)
-  love.graphics.print(config.CAMERA_LAZY_FOLLOW["value"]    ,150, 340)
+  config.CAMERA_SHAKE.MAX_X = game:add_key_control("f", config.CAMERA_SHAKE.MAX_X, 0.5)
+  love.graphics.print(config.GRAVITYSPEED                   ,150, 200-200)
+  love.graphics.print(config.DEC                            ,150, 220-200)
+  love.graphics.print(config.ACCR                           ,150, 240-200)
+  love.graphics.print(config.JUMPSPEED                      ,150, 260-200)
+  love.graphics.print(config.FRC                            ,150, 280-200)
+  love.graphics.print(config.MAXSPEED_R                     ,150, 300-200)
+  love.graphics.print(config.CAMERA_SHAKE["PERLIN"]         ,150, 320-200)
+  love.graphics.print(config.CAMERA_LAZY_FOLLOW["value"]    ,150, 340-200)
+  love.graphics.print(config.CAMERA_SHAKE.MAX_X             ,150, 360-200)
 
-  love.graphics.print("gravity u"                           ,0,   200)
-  love.graphics.print("dec i"                               ,0,   220)
-  love.graphics.print("accr o"                              ,0,   240)
-  love.graphics.print("max jump speed p"                    ,0,   260)
-  love.graphics.print("friction j"                          ,0,   280)
-  love.graphics.print("maxspeedr k"                         ,0,   300)
-  love.graphics.print("camera shake l"                      ,0,   320)
-  love.graphics.print("camera lazy follow"                  ,0,   340)
+  love.graphics.print("gravity u"                                          ,0,   200-200)
+  love.graphics.print("dec i"                                              ,0,   220-200)
+  love.graphics.print("accr o"                                             ,0,   240-200)
+  love.graphics.print("max jump speed p"                                   ,0,   260-200)
+  love.graphics.print("friction j"                                         ,0,   280-200)
+  love.graphics.print("maxspeedr k"                                        ,0,   300-200)
+  love.graphics.print("camera shake l"                                     ,0,   320-200)
+  love.graphics.print("camera lazy follow"                                 ,0,   340-200)
+  love.graphics.print('camera shake MAX_X'                                 ,0,   360-200)
 end
 
 function game:update(dt)
@@ -134,6 +137,7 @@ function game:draw_all()
   if self:is_slow_motion() then
     frame_number = frame_number + 1
     angle, offx, offy = shake_camera_perlin(frame_number)
+    -- angle, offx, offy = shake_camera(frame_number)
     camera.x = camera.x + offx
     camera.y = camera.y + offy
   end
@@ -148,27 +152,32 @@ function game:draw_all()
 end
 
 local rect = {
-  x = 600,
-  y = 100,
-  width = 400,
-  height = 350,
+  x = 1000,
+  y = 300,
+  width = 200,
+  height = 150,
 }
 
 function game:draw()
-  self:draw_all()
   local mode = 'line'
   local is_collision = self.player:collide_bbox(rect.x, rect.y, rect.width, rect.height)
   if is_collision then
+    local a = (frame_number*config.CAMERA_SHAKE.PERLIN) % 300
+    local x = samplePerlin(a/20.0, slope_1)
+    local y = samplePerlin(a/20.0, slope_2)
+    love.graphics.setColor(1, (x+1)/2, (x+1)/2)
     mode = 'line'
     self.slow_motion = true
   else
+    love.graphics.setColor(1, 1, 1)
     self.slow_motion = false
     mode = 'fill'
   end
   local obj_x, obj_y = camera:to_screen_position(rect.x, rect.y)
+  self:draw_all()
+
   love.graphics.rectangle(mode, obj_x, obj_y, rect.width, rect.height, angle)
 
 end
-
 
 return game

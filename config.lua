@@ -5,7 +5,7 @@ local KEYS={
   UP="up",
   RUN="lshift",
   JUMP="space",
-  RESET="f",
+  RESET="escape",
 }
 
 local config = {
@@ -39,8 +39,8 @@ local config = {
   DT_RATIO=60,
   STATESTACKMAXELEM=20,
   DRAW_BBOXES=true,
-  CAMERA_SHAKE={RANDOM=0.2, PERLIN=0.1},
-  CAMERA_LAZY_FOLLOW={value=0.90},
+  CAMERA_SHAKE={RANDOM=0.2, PERLIN=1.0, MAX_X=10.0, MAX_Y=10.0, MAX_ANGLE=0.1},
+  CAMERA_LAZY_FOLLOW={value=0.90}, 
 }
 
 return config

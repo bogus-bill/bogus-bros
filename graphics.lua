@@ -4,7 +4,7 @@ require "sprites"
 local graphics = {}
 
 local animated_background = {
-  quads = back1,
+  quads = back5,
   current_quad=1,
   speed_ind=1,
   frame_period = 8, -- we want to switch frames 4 times a second
@@ -30,7 +30,7 @@ function animated_background:draw(x, y, angle)
     for _, offset_y in pairs(draw_at_y) do
       local xpos = x % block_width + offset_x
       local ypos = y % block_height + offset_y
-      love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos, 0)
+      love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos, angle)
     end
   end
 end

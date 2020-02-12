@@ -9,6 +9,7 @@ background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario
 local back_height_1 = 18
 local back_height_2 = 18+block_height+6
 local back_height_3 = 18+(block_height+6)*11
+local back_height_5 = 18+(block_height+6)*10
 
 back1 = {
   love.graphics.newQuad(7, back_height_1, block_width, block_height, background_atlas:getDimensions()),
@@ -16,6 +17,7 @@ back1 = {
   love.graphics.newQuad(7+512*2+2, back_height_1, block_width, block_height, background_atlas:getDimensions()),
   love.graphics.newQuad(7+512*3+3, back_height_1, block_width, block_height, background_atlas:getDimensions()),
 }
+
 back2 = {
   love.graphics.newQuad(7, back_height_2, block_width, block_height, background_atlas:getDimensions()),
   love.graphics.newQuad(520, back_height_2, block_width, block_height, background_atlas:getDimensions()),
@@ -27,6 +29,13 @@ back3 = {
   love.graphics.newQuad(520, back_height_3, block_width, block_height, background_atlas:getDimensions()),
   love.graphics.newQuad(1033, back_height_3, block_width, block_height, background_atlas:getDimensions()),
   love.graphics.newQuad(1546, back_height_3, block_width, block_height, background_atlas:getDimensions())
+}
+
+back5 = {
+  love.graphics.newQuad(7, back_height_5, block_width, block_height, background_atlas:getDimensions()),
+  love.graphics.newQuad(520, back_height_5, block_width, block_height, background_atlas:getDimensions()),
+  love.graphics.newQuad(1033, back_height_5, block_width, block_height, background_atlas:getDimensions()),
+  love.graphics.newQuad(1546, back_height_5, block_width, block_height, background_atlas:getDimensions())
 }
 
 function new_sprite(quad, texture_atlas)
