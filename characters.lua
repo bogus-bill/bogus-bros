@@ -120,10 +120,7 @@ function Player:update_speed(dt)
         vx = self.maxspeed * sign(vx)
       end
   else
-    print("what is up??", self.vx, self.maxspeed)
-    print("vx before", vx)
     vx = self:apply_friction(vx, dt)
-    print("vx after", vx)
 end
 
 --   print("vx - friction is", math.abs(vx) - self.friction)
@@ -188,6 +185,7 @@ end
 --   self.vx = math.min(math.abs(vx), self.maxspeed) * sign(vx) -- make sure Player does not go faster than "maxspeed"
   self.vy = vy
   self.vx = vx
+
 
   self.jump_flag = jump_flag
   self.jump_ok = jump_ok
@@ -364,6 +362,13 @@ function Player:update(dt, frame_cnt)
   if table.getn(self.statestack) > config.STATESTACKMAXELEM then
       table.remove(self.statestack, 10)
   end
+
+  if game:is_slow_motion() then
+    config.DT_RATIO = 15
+  else
+    config.DT_RATIO = 60
+  end
+
   self.x = self.x + self.vx*dt*config.DT_RATIO
   self.y = self.y + self.vy*dt*config.DT_RATIO
 
@@ -372,16 +377,13 @@ function Player:update(dt, frame_cnt)
   end
 end
 
-function Player:draw(x, y)
+function Player:draw(x, y, angle)
     -- if not angle then angle = 0 end
     -- love.graphics.draw(self.texture_atlas, self.current_quad, self.x + self.offsetx + offsetx, self.y + self.offsety + offsety, angle, self.scalex, self.scaley)
     if config.DRAW_BBOXES then self.bbox:draw(x, y) end
-    love.graphics.draw(self.texture_atlas, self.current_quad, x + self.offsetx, y + self.offsety, 0, self.scalex, self.scaley)
+    love.graphics.draw(self.texture_atlas, self.current_quad, x + self.offsetx, y + self.offsety, angle, self.scalex, self.scaley)
 end
 
-function Player:print_debug()
-    print(self.bbox.x, self.bbox.y, self.bbox.width, self.bbox.height)
-end
 characters.Player = Player
 
 Bobomb = {}

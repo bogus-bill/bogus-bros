@@ -22,7 +22,7 @@ function animated_background:update(dt)
   self.current_quad = math.floor(self.current_quad) + 1
 end
 
-function animated_background:draw(x, y)
+function animated_background:draw(x, y, angle)
   -- draw background 3 times at [-width, 0, +width] for scrolling
   local draw_at_x = {block_width, 0, -block_width}
   local draw_at_y = {block_height, 0, -block_height}
@@ -30,7 +30,7 @@ function animated_background:draw(x, y)
     for _, offset_y in pairs(draw_at_y) do
       local xpos = x % block_width + offset_x
       local ypos = y % block_height + offset_y
-      love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos)
+      love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos, 0)
     end
   end
 end

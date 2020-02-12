@@ -4,7 +4,7 @@ local config = require "config"
 
 MAXANGLE = 0.1
 
-maxoffset = 20.0
+maxoffset = 10.0
 
 -- trauma level between [0, 1]
 -- camera shake is trauma2 or trauma3:
@@ -30,6 +30,47 @@ function get_random_float()
   return num
 end
 
+slope_1 = {}
+slope_2 = {}
+slope_3 = {}
+
+for i = -1, 1100 do
+  slope_1[i] = math.random()*2.0 - 1.0
+  slope_2[i] = math.random()*2.0 - 1.0
+  slope_3[i] = math.random()*2.0 - 1.0
+end
+
+function samplePerlin(x, slope_obj)
+  local lo = math.floor(x)
+  local hi = lo + 1.0
+  local dist = x - lo
+  local loSlope = slope_obj[lo]
+  local hiSlope = slope_obj[hi]
+
+
+  local loPos = loSlope * dist
+  local hiPos = -hiSlope * (1.0 - dist)
+  local u = dist * dist * (3.0 - 2.0 * dist)
+  print(loSlope, hiSlope, dist, loPos, hiPos, u)
+  return (loPos * (1.0 - u)) + (hiPos * u)
+end
+
+function shake_camera_perlin(frame_number)
+  local x = frame_number % 1000
+  x = x / 10.0
+  local perlin = samplePerlin(x, slope_1)
+  local perlin2 = samplePerlin(x, slope_2)
+
+  print(perlin, "perlin for x=", x)
+
+  local angle = MAXANGLE * samplePerlin(x, slope_3)
+
+  local offsetx = maxoffset * perlin
+  local offsety = maxoffset * perlin2
+
+  return angle, offsetx, offsety
+end
+
 function shake_camera()
   local angle = MAXANGLE * config.CAMERA_SHAKE.RANDOM * get_random_float()
   -- local offsetx = maxoffset * config.CAMERA_SHAKE.RANDOM * get_random_float()
@@ -37,7 +78,6 @@ function shake_camera()
 
   local offsetx = 0
 
-  print(angle, offsetx, offsety)
   return angle, offsetx, offsety
 end
 
