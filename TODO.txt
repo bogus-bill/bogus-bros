@@ -1,8 +1,13 @@
+ORDERED BY PRIORITY:
+  - add flying enemies with sinusodial movement just like in shoot-them-ups
+  - make slow-motion for time=X
+  - missile tete chercheuse
+  - boomrang
+
 - add tilemap to add tiles (objets, walls, ...)
 - add scrolling of tilemap
-- add Perlin noise and cubic asymptotic for camera
 - make portalsss
-- make slow-motion matrix like
+- ability to grab stuff (shells, bomb, etc..)
 
 secondary:
 
@@ -25,7 +30,6 @@ secondary:
 - lightning from sky which indicated like 2 seconds in advance where its gonna land
 - battle royal mode
 - cursed mushroom
-- boomrang
 - roof tiles that fall and eventually explode
 - if enemys take a mushroom they get big or evil
 - kirby
@@ -34,10 +38,10 @@ secondary:
 - evil mario
 - fireballs that destroy walls
 - bob-bombs
-- add flying enemies with sinusodial movement just like in shoot-them-ups
 
 
 # DONE:
+- add Perlin noise and cubic asymptotic for camera
 - add proper jumping for mario
 - add background from image
 - fix mario moving when still mode
