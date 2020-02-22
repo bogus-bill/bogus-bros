@@ -11,6 +11,7 @@ ORDERED BY PRIORITY:
 
 secondary:
 
+- liminous aura around player
 - slow-motion 
 - missile tete chercheuse
 - bat baseball

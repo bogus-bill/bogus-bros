@@ -38,13 +38,38 @@ function Player:new(x, y, width, height, vx, vy)
     cnt_dt = 0,
     quad_time_passed = 0,
     bbox = physics.Bbox:new(x, y, width, height),
-}
+  }
+
+  obj.jumping = {
+      physically_possible=false,
+      max_jumps=2,
+      jumps_done=0,
+      timer=0,
+      time_between_jumps=0.5
+  }
+
   setmetatable(obj, {__index = Player})
 
   obj:set_maxspeed_r(config.MAXSPEED_R)
 
   self = obj
   return obj
+end
+
+function Player:could_physically_jump()
+    return true
+end
+
+function Player:can_jump()
+    local jmp = self.jumping
+    if not self:could_physically_jump() then return false end
+    if jmp.jumps_done >= jmp.max_jumps then return false end
+    if jmp.jumps_done > 0 then
+        if jmp.timer >= jmp.time_between_jump then
+            return false
+        end
+    end
+    return false
 end
 
 function Player:collide_bbox(x, y, width, height)
@@ -67,128 +92,119 @@ function Player:apply_friction(vx, dt)
     return vx
 end
 
-function Player:update_speed(dt)
-  local vx = self.vx
-  local vy = self.vy
-  local acc = config.ACCR*dt
-  local dec = config.DEC*dt
+function Player:process_maxspeed()
+    if events:pushing_run() and (events:pushing_left() or events:pushing_right()) then
+        self.maxspeed = self.maxspeed_r
+    end
+    self.maxspeed = self.maxspeed_w
+end
 
-  self.looking_up, self.looking_down = false, false
-
-  if events:pushing_run() and (events:pushing_left() or events:pushing_right()) then
-      self.maxspeed = self.maxspeed_r
-  else
-      self.maxspeed = self.maxspeed_w
-  end
-
-  -- accelerate/decelerate character based on where Player keyboard event (going left/right)
-  local movement = "still"
-
+function Player:process_directions(vx)
+  self.movement = "still"
   if events.pushing_right() then
     self.direction = "right"
     if not love.keyboard.isDown(config.KEYS.LEFT) then
         if vx < 0 then
-            movement = "decelerating"
+            self.movement = "decelerating"
         elseif vx >= 0 then
-            movement = "accelerating"
+            self.movement = "accelerating"
         end
     end
   elseif events.pushing_left() then
     self.direction = "left"
     if vx > 0 then
-        movement = "decelerating"
+        self.movement = "decelerating"
     elseif vx <= 0 then
-        movement = "accelerating"
+        self.movement = "accelerating"
     end
   elseif events.pushing_up() then
     self.looking_up = true
   elseif events.pushing_down() then
     self.looking_down = true
   end
-
-
-  if movement == "decelerating" then
-    if self:is_on_floor() then
-        vx = sign(vx) * (math.abs(vx) - dec)
-    else
-        vx = sign(vx) * (math.abs(vx) - dec*config.JUMPING_DEC)
-    end
-  elseif movement == "accelerating" then
-      if math.abs(vx) < self.maxspeed then
-        vx = sign(vx) * (math.abs(vx) + acc)
-      else
-        vx = self.maxspeed * sign(vx)
-      end
-  else
-    vx = self:apply_friction(vx, dt)
 end
 
---   print("vx - friction is", math.abs(vx) - self.friction)
-
-
---   vx = math.abs(math.abs(vx) - self.friction) * sign(vx)
-
-  -- air dragging when above floor
---   if (not self:is_on_floor())
---          -- and vy > -config.MAXJUMPSPEED
---          and math.abs(vx) >= config.AIR_DRAG_CONST1 then
---      print("applying bullshit", game.frame_cnt)
---      if self.is_high_speed_running then
---          vx = vx * (0.99)
---      else
---          vx = vx * config.AIR_DRAG_CONST2
---      end
---   end
-
---   if not self:is_on_floor() then
---     dec = dec / 4
---   else
---     dec = config.DEC
---   end
-
-
-  -- jumping
-  local jump_ok = self.jump_ok -- whether pressing "jump" will trigger jumping
-  local jump_flag = self.jump_flag -- whether last jump was acknowledged
-  local is_on_floor = self:is_on_floor()
-
-  if love.keyboard.isDown(config.KEYS.JUMP) then
-      if is_on_floor and jump_ok then
-          jump_ok = false
-          jump_flag = true
-          vy = -self.jumpspeed
+function Player:process_acceleration_vx(vx, acc, dec, dt)
+  self.acceleration_vx = 0
+  if self.movement == "decelerating" then
+    if self:is_on_floor() then
+        self.acceleration_vx = sign(vx) * (math.abs(vx) - dec)
+    else
+        self.acceleration_vx = sign(vx) * (math.abs(vx) - dec*config.JUMPING_DEC)
+    end
+  elseif self.movement == "accelerating" then
+      if math.abs(vx) < self.maxspeed then
+        self.acceleration_vx = sign(vx) * (math.abs(vx) + acc)
+      else
+        self.acceleration_vx = self.maxspeed * sign(vx)
       end
-  else
-      if is_on_floor then
-          jump_ok = true
-      end
-
-      if vy < 0 then
-          if jump_flag == true then
-              jump_flag = false
-              if vy < -self.jumpspeed/2 then
-                  vy = -self.jumpspeed/2
-              end
-              if vy < -config.MAXJUMPSPEED then
-                  vy = -config.MAXJUMPSPEED
-              end
-          end
-      end
+  elseif self.movement == "still" then
+    self.acceleration_vx = self:apply_friction(vx, dt)
   end
+  print(self.acceleration_vx, "vxvx")
+end
 
-  -- apply gravity force
+function Player:update_speed(dt)
+  local acc = config.ACCR*dt
+  local dec = config.DEC*dt
+
+  self.looking_up, self.looking_down = false, false
+
+  self:process_maxspeed()
+  self:process_directions(self.vx)
+  self:process_acceleration_vx(self.vx, acc, dec, dt)
+  self:process_jump()
+  self:process_gravity(dt)
+  self:process_speed_limits_vy()
+
+  self.vx = self.vx + self.acceleration_vx
+end
+
+function Player:process_speed_limits_vy()
+  if self.vy < 0 then
+    if self.jump_flag == true then
+      self.vy = math.max(self.vy, -self.jumpspeed)
+      self.vy = math.max(self.vy, -config.MAXJUMPSPEED)
+    end
+  end
+end
+
+function Player:process_gravity(dt)
   if not is_on_floor then
-      vy = self.vy + config.GRAVITYSPEED*dt
-      vy = math.min(vy, config.MAX_FALLING_SPEED)
+    self.vy = self.vy + config.GRAVITYSPEED*dt
+    self.vy = math.min(self.vy, config.MAX_FALLING_SPEED)
   end
+end
 
---   self.vx = math.min(math.abs(vx), self.maxspeed) * sign(vx) -- make sure Player does not go faster than "maxspeed"
-  self.vy = vy
-  self.vx = vx
+function Player:jump()
+    self.vy = -self.jumpspeed*20
+    self.jump_ok = false
+    self.jump_flag = true
+end
 
+function Player:process_jump()
+  if love.keyboard.isDown(config.KEYS.JUMP) then
+    if self:is_on_floor() and self.jump_ok then
+        self:jump()
+    end
+  else
+    if self:is_on_floor() then
+        self.jump_ok = true
+    end
+  end
+end
 
-  self.jump_flag = jump_flag
-  self.jump_ok = jump_ok
+function Player:apply_air_dragging()
+    -- applied when above floor
+    if (not self:is_on_floor())
+         -- and vy > -config.MAXJUMPSPEED
+         and math.abs(vx) >= config.AIR_DRAG_CONST1 then
+     if self.is_high_speed_running then
+         vx = vx * (0.99)
+     else
+         vx = vx * config.AIR_DRAG_CONST2
+     end
+  end
 end
 
 function Player:is_on_floor()
