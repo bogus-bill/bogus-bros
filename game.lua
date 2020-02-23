@@ -77,7 +77,7 @@ function game:throw_rectangle()
   table.insert(throwables, rect)
 end
 
-function game:update_test_mode(dt)
+function game:update_test_mode()
   config.GRAVITYSPEED = game:add_key_control("u", config.GRAVITYSPEED, 0.1)
   config.DEC = game:add_key_control("i", config.DEC, 0.2)
   config.ACCR = game:add_key_control("o", config.ACCR, 0.1)
@@ -109,6 +109,7 @@ function game:update_test_mode(dt)
 end
 
 function game:update(dt)
+  self.dt = dt
   if events:pushing_reset() then
     self.player.x, self.player.y = self:get_resolution()
   end
@@ -123,8 +124,13 @@ function game:update(dt)
 
   local player = self.player
 
-  -- camera:center_on(player.x, player.y, player.width, player.height)
-  camera:follow_lazily(player.x, player.y, player.width, player.height)
+
+  camera_type = config.CAMERATYPE or "center_on"
+  if camera_type == "center_on" then
+    camera:center_on(player.x, player.y, player.width, player.height)
+  elseif camera_type == "follow_lazily" then
+    camera:follow_lazily(player.x, player.y, player.width, player.height, self.dt)
+  end
 end
 
 camera = {
@@ -148,6 +154,9 @@ function camera:follow_lazily(x, y, width, height)
   self.x = math.max(0, self.x)
   self.x = math.min(self.x, 2000)
   self.y = math.min(self.y, 0)
+
+  self.x = self.x
+  self.y = self.y
 end
 
 function camera:center_on(x, y, width, height)
@@ -180,7 +189,6 @@ function game:draw_all()
     camera.x = camera.x + offx
     camera.y = camera.y + offy
   end
-  -- local drawables = {self.animated_background, self.effects, self.ennemies, self.player}
 
   local drawables = {self.animated_background, self.player}
 
@@ -188,6 +196,7 @@ function game:draw_all()
       local obj_x, obj_y = camera:to_screen_position(object.x, object.y)
       object:draw(obj_x, obj_y, angle)
   end
+  game:update_test_mode()
 end
 
 local rect = {
@@ -201,6 +210,7 @@ function game:draw()
   local mode = 'line'
   local is_collision = self.player:collide_bbox(rect.x, rect.y, rect.width, rect.height)
   if is_collision then
+
     local a = (frame_number*config.CAMERA_SHAKE.PERLIN*config.CAMERA_SHAKE.MAX_X) % 1000
     local x = samplePerlin(a/20.0, slope_1)
     local y = samplePerlin(a/20.0, slope_2)
@@ -215,7 +225,6 @@ function game:draw()
   end
   local obj_x, obj_y = camera:to_screen_position(rect.x, rect.y)
   self:draw_all()
-
   love.graphics.rectangle(mode, obj_x, obj_y, rect.width, rect.height, angle)
 
 end

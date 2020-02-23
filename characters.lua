@@ -1,4 +1,4 @@
-require 'lib/tools'
+local tools = require 'lib/tools'
 
 local config = require "config"
 local game = require "game"
@@ -31,12 +31,11 @@ function Player:new(x, y, width, height, vx, vy)
     statestack = {},
     is_high_speed_running = false,
     maxspeed_r = config.MAXSPEED_R,
-    -- maxspeed_w = config.MAXSPEED_W,
     jumpspeed = config.JUMPSPEED,
     friction = config.FRC,
-    time_on_maxspeed = 0,
+    frames_on_maxspeed = 0,
     cnt_dt = 0,
-    quad_time_passed = 0,
+    quad_frames_elapsed = 0,
     bbox = physics.Bbox:new(x, y, width, height),
   }
 
@@ -76,30 +75,30 @@ function Player:collide_bbox(x, y, width, height)
     return self.bbox:collide_bbox(x, y, width, height)
 end
 
-function Player:apply_friction(vx, dt)
-    if events.pushing_left() or events.pushing_right() then
+function Player:apply_friction(vx)
+    if self.friction > math.abs(vx) then return 0 end
+    if self.movement ~= "still" then
         return vx
-    end
-    if self.friction*dt > math.abs(vx) then
-        vx = 0
     else
         if self:is_on_floor() then
-            vx = (math.abs(vx) - self.friction*dt) * sign(vx)
+            vx = (math.abs(vx) - self.friction) * sign(vx)
         else
-            vx = (math.abs(vx) - self.friction*dt*0.5) * sign(vx)
+            vx = (math.abs(vx) - self.friction*0.5) * sign(vx)
         end
     end
     return vx
 end
 
-function Player:process_maxspeed()
+function Player:calculate_maxspeed()
     if events:pushing_run() and (events:pushing_left() or events:pushing_right()) then
         self.maxspeed = self.maxspeed_r
+    else
+        self.maxspeed = self.maxspeed_w
     end
-    self.maxspeed = self.maxspeed_w
 end
 
-function Player:process_directions(vx)
+function Player:update_directions(vx)
+  self.looking_up, self.looking_down = false, false
   self.movement = "still"
   if events.pushing_right() then
     self.direction = "right"
@@ -124,74 +123,72 @@ function Player:process_directions(vx)
   end
 end
 
-function Player:process_acceleration_vx(vx, acc, dec, dt)
-  self.acceleration_vx = 0
+function Player:calculate_input_acceleration(vx, acc, dec)
+  local sign_vx = sign(vx)
+
+  if math.abs(vx) > self.maxspeed and self.movement ~= "still" then
+    vx = sign_vx * self.maxspeed
+  end
   if self.movement == "decelerating" then
-    if self:is_on_floor() then
-        self.acceleration_vx = sign(vx) * (math.abs(vx) - dec)
-    else
-        self.acceleration_vx = sign(vx) * (math.abs(vx) - dec*config.JUMPING_DEC)
-    end
+    if not self:is_on_floor() then dec = config.JUMPING_DEC end
+    vx = sign_vx * (math.abs(vx) - dec)
   elseif self.movement == "accelerating" then
-      if math.abs(vx) < self.maxspeed then
-        self.acceleration_vx = sign(vx) * (math.abs(vx) + acc)
-      else
-        self.acceleration_vx = self.maxspeed * sign(vx)
-      end
-  elseif self.movement == "still" then
-    self.acceleration_vx = self:apply_friction(vx, dt)
+    vx = sign_vx * (math.abs(vx) + acc)
+  else
+    vx = self:apply_friction(vx)
   end
-  print(self.acceleration_vx, "vxvx")
+  return vx
 end
 
-function Player:update_speed(dt)
-  local acc = config.ACCR*dt
-  local dec = config.DEC*dt
+function Player:update_speed()
+  local new_vx, new_vy = self.vx, self.vy
+  print("vx is", self.vx)
+  local acc, dec = config.ACCR, config.DEC
 
-  self.looking_up, self.looking_down = false, false
+  new_vy = self:process_jump(self.vy)
+  new_vy = self:process_gravity(new_vy)
+--   new_vy = self:process_speed_limits_vy(new_vy)
+  new_vx = self:calculate_input_acceleration(self.vx, acc, dec)
 
-  self:process_maxspeed()
-  self:process_directions(self.vx)
-  self:process_acceleration_vx(self.vx, acc, dec, dt)
-  self:process_jump()
-  self:process_gravity(dt)
-  self:process_speed_limits_vy()
-
-  self.vx = self.vx + self.acceleration_vx
+  self.vx, self.vy = new_vx, new_vy
 end
 
-function Player:process_speed_limits_vy()
-  if self.vy < 0 then
+function Player:process_speed_limits_vy(vy)
+  if vy < 0 then
     if self.jump_flag == true then
-      self.vy = math.max(self.vy, -self.jumpspeed)
-      self.vy = math.max(self.vy, -config.MAXJUMPSPEED)
+      vy = math.max(vy, -self.jumpspeed)
+      vy = math.max(vy, -config.MAXJUMPSPEED)
     end
   end
+  return vy
 end
 
-function Player:process_gravity(dt)
-  if not is_on_floor then
-    self.vy = self.vy + config.GRAVITYSPEED*dt
-    self.vy = math.min(self.vy, config.MAX_FALLING_SPEED)
+function Player:process_gravity(vy)
+  if not self:is_on_floor() then
+    vy = vy + config.GRAVITYSPEED
+    vy = math.min(vy, config.MAX_FALLING_SPEED)
   end
+  return vy
 end
 
-function Player:jump()
-    self.vy = -self.jumpspeed*20
+function Player:jump(vy)
+    vy = -self.jumpspeed
     self.jump_ok = false
     self.jump_flag = true
+    return vy
 end
 
-function Player:process_jump()
+function Player:process_jump(vy)
   if love.keyboard.isDown(config.KEYS.JUMP) then
     if self:is_on_floor() and self.jump_ok then
-        self:jump()
+        vy = -self.jumpspeed
+        self.jump_ok = false
+        self.jump_flag = true
     end
-  else
-    if self:is_on_floor() then
-        self.jump_ok = true
-    end
+  elseif self:is_on_floor() then
+    self.jump_ok = true
   end
+  return vy
 end
 
 function Player:apply_air_dragging()
@@ -211,7 +208,7 @@ function Player:is_on_floor()
     return self.y + self.height >= floor_y
 end
 
-function Player:update_sprite_state()
+function Player:process_sprite_state()
     local absvx = math.abs(self.vx)
     if self.looking_up == true then
         self.sprite_state = "looking_up"
@@ -234,17 +231,17 @@ function Player:process_offset()
     end
 end
 
-function Player:update_direction()
-    if table.getn(self.statestack) > 1 then
-        if self.direction ~= self.statestack[1].direction then
-            self:switch_direction()
-        end
-    end
+function Player:previous_direction()
+    return self.statestack[1].direction
 end
 
-function Player:switch_direction()
-    self.scalex = -self.scalex
-    self:process_offset() -- when scaling horizontally we need to adjust with a horizontal offset
+function Player:update_sprite_offset()
+    if table.getn(self.statestack) > 1 then
+        if self.direction ~= self:previous_direction() then
+            self.scalex = -self.scalex
+            self:process_offset() -- when scaling horizontally we need to adjust with a horizontal offset
+        end
+    end
 end
 
 function Player:is_jumping()
@@ -256,86 +253,88 @@ function Player:is_falling()
     return not self:is_on_floor() and self.vy > 0
 end
 
+function Player:get_flying_state()
+    if self:is_on_floor() then return false end
+
+    if self.vy <= 0 then
+        return "jumping"
+    else
+        return "flying"
+    end
+end
+
 -- return dy = y - y[last_frame]
-function Player:get_y_distance()
+function Player:calculate_df_y()
     if table.getn(self.statestack) > 1 then
         return self.y - self.statestack[1].y
     end
     return 0
 end
 
-function Player:choose_falling_sprite()
-    if self.is_high_speed_running then
-        self.current_quad = jumping_high_speed_mario_quad
-    else
-        self.current_quad = falling_mario_quad
-    end
-end
-
-function Player:choose_jumping_sprite()
-    if self.is_high_speed_running then
-        self.current_quad = jumping_high_speed_mario_quad
-    else
-        self.current_quad = jumping_mario_quad
-    end
-end
-
-local speed_match = {
+local speed_map = {
     walking=config.MAXSPEED_W,
     running=config.MAXSPEED_R,
     highspeed_running=config.MAXSPEED_HSR,
 }
 
-function Player:choose_walking_sprite(min_rate, max_rate, dt)
-    local switch_time
-    local sprite_speed = speed_match[self.sprite_state]
-    switch_time = calculate_switch_time(dt, self.vx, min_rate, max_rate, sprite_speed)
+function Player:calculate_walking_sprite(min_rate, max_rate)
+    local sprite_speed = speed_map[self.sprite_state]
+    local switch_time = tools.calculate_switch_time(self.vx, min_rate, max_rate, sprite_speed)
+    local current_quad = self.current_quad
 
-    if self.quad_time_passed >= switch_time then
-        self.quad_time_passed = 0
-        if math.abs(self.vx) <= config.MAXSPEED_R then
-            self.current_quad = walking_sprites:next()
+    if self.quad_frames_elapsed >= switch_time then
+        self.quad_frames_elapsed = 0
+        -- if math.abs(self.vx) <= config.MAXSPEED_R then
+        if self.is_high_speed_running then
+            current_quad = hs_running_sprites:next()
         else
-            self.current_quad = hs_running_sprites:next()
+            current_quad = walking_sprites:next()
         end
     end
-    self.quad_time_passed = self.quad_time_passed + dt
+    self.quad_frames_elapsed = self.quad_frames_elapsed + 1
+    return current_quad
 end
 
-function Player:update_quad(dt, frame_cnt)
-    local y_distance = self:get_y_distance()
+function Player:calculate_quad(frame_cnt)
+    local y_distance = self:calculate_df_y()
+    local flying_state =self:get_flying_state()
+    local current_quad = self.current_quad
 
-    if self:is_falling() then
-        self:choose_falling_sprite()
-    elseif self:is_jumping() then
-        self:choose_jumping_sprite()
+    if flying_state then
+        if self.is_high_speed_running then
+            return jumping_high_speed_mario_quad
+        elseif flying_state == "jumping" then
+            return jumping_mario_quad
+        else
+            return falling_mario_quad
+        end
     elseif self.looking_up then
-        self.current_quad = lookingup_mario_quad
+        return lookingup_mario_quad
     elseif self.looking_down then
-        self.current_quad = lookingdown_mario_quad
+        return lookingdown_mario_quad
     elseif math.abs(self.vx) == 0 then
-        self.current_quad = still_mario_quad
+        return still_mario_quad
     elseif math.abs(self.vx) > 0 and y_distance == 0 then
-        local min_rate, max_rate = 0.05, 0.1
-        self:choose_walking_sprite(min_rate, max_rate, dt)
+        local min_rate, max_rate = 4, 8
+        return self:calculate_walking_sprite(min_rate, max_rate)
     end
+    return current_quad
 end
 
-function Player:set_maxspeed_r(value)
+function Player:set_maxspeed_r(value, speedtype)
     self.maxspeed_r = value
     self.maxspeed_w = value * 0.7
 end
 
-function Player:process_high_speed_running(dt)
+function Player:process_high_speed_running()
     -- high speed running means player has been running over MAXSPEED_R
     -- for a certain amount of frames thus we switch to high speed running
     -- print("frames on high", self.frames_on_maxspeed, game.frame_cnt, self.vx)
     if self:is_on_floor() then
         if math.abs(self.vx) >= config.MAXSPEED_R then
-            self.time_on_maxspeed = self.time_on_maxspeed + dt
-            if self.time_on_maxspeed >= config.TIME_UNTIL_HS_RUNNING then
+            self.frames_on_maxspeed = self.frames_on_maxspeed + 1
+            if self.frames_on_maxspeed >= config.TIME_UNTIL_HS_RUNNING then
                 self.is_high_speed_running = true
-                -- self.maxspeed_r = config.MAXSPEED_HSR
                 self:set_maxspeed_r(config.MAXSPEED_HSR)
                 self.jumpspeed = config.JUMPSPEED * 1.3
                 self.friction = config.FRC
@@ -344,49 +343,59 @@ function Player:process_high_speed_running(dt)
             -- self.maxspeed_r = config.MAXSPEED_R
             self:set_maxspeed_r(config.MAXSPEED_R)
             self.jumpspeed = config.JUMPSPEED
-            self.time_on_maxspeed = 0
+            self.frames_on_maxspeed = 0
             self.is_high_speed_running= false
             self.friction = config.FRC
         end
     end
 end
 
-function Player:update(dt, frame_cnt)
-  self.cnt_dt = self.cnt_dt + 1
+function Player:update_statestack(stackmax)
+    local statestack_elem = {
+        x=self.x,
+        y=self.y,
+        direction=self.direction,
+        vx=self.vx,
+        vy=self.vy,
+        quad=self.current_quad,
+        scalex=self.scalex,
+        scaley=self.scaley,
+        offsetx=self.offsetx,
+        offsety=self.offsety,
+    }
 
-  self:update_speed(dt)
-  self:update_sprite_state()
-  self:update_quad(dt, frame_cnt)
-  self:update_direction()
+    table.insert(self.statestack, 1, statestack_elem)
+    if table.getn(self.statestack) > stackmax then
+        table.remove(self.statestack, stackmax)
+    end
+end
+
+function Player:update_sprite(frame_cnt)
+    self:process_sprite_state()
+    self.current_quad = self:calculate_quad(frame_cnt)
+    self:update_sprite_offset()
+end
+
+function Player:update(dt, frame_cnt)
+  print("direction", self.direction, self.movement)
+  self.cnt_dt = self.cnt_dt + 1
+  self:calculate_maxspeed()
+  self:update_directions(self.vx)
+  self:update_speed()
+  self:update_sprite(frame_cnt)
   self:process_high_speed_running(dt)
   self.bbox:update_coordinates(self.x, self.y)
 
-  local statestack_elem = {
-      x=self.x,
-      y=self.y,
-      direction=self.direction,
-      vx=self.vx,
-      vy=self.vy,
-      quad=self.current_quad,
-      scalex=self.scalex,
-      scaley=self.scaley,
-      offsetx=self.offsetx,
-      offsety=self.offsety,
-  }
+  self:update_statestack(config.STATESTACKMAXELEM)
+-- TODO: remove that when possible
+--   if game:is_slow_motion() then
+--     DT_RATIO = 15
+--   else
+--     DT_RATIO = 60
+--   end
 
-  table.insert(self.statestack, 1, statestack_elem)
-  if table.getn(self.statestack) > config.STATESTACKMAXELEM then
-      table.remove(self.statestack, 10)
-  end
-
-  if game:is_slow_motion() then
-    config.DT_RATIO = 15
-  else
-    config.DT_RATIO = 60
-  end
-
-  self.x = self.x + self.vx*dt*config.DT_RATIO
-  self.y = self.y + self.vy*dt*config.DT_RATIO
+  self.x = self.x + self.vx
+  self.y = self.y + self.vy
 
   if self.y + self.height >= floor_y then
     self.y = floor_y - self.height
@@ -401,14 +410,5 @@ function Player:draw(x, y, angle)
 end
 
 characters.Player = Player
-
-Bobomb = {}
-
-function Bobomb.init()
-    local obj = {}
-    setmetatable(obj, {__index=Drawable})
-    return obj
-end
-
 
 return characters

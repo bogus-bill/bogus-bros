@@ -1,5 +1,3 @@
-
-
 require 'lib/tools'
 
 local config = require 'config'
@@ -7,8 +5,11 @@ local game = require 'game'
 
 local window_options = config.WINDOWOPTIONS
 local game_width, game_height = game:get_resolution()
-
 local scale_width, scale_height
+
+-- implementation of love.run with fixed timestep 
+-- from excellent article https://gafferongames.com/post/fix_your_timestep
+require 'love_run'
 
 function love.load()
     game:init()
@@ -21,13 +22,11 @@ function love.update(dt)
     -- if love.keyboard.isDown("o") then game.animated_background.x = (game.animated_background.x - 10) end
     -- if love.keyboard.isDown("p") then game.animated_background.x = (game.animated_background.x + 10) end
     game:update(dt)
-    -- love.graphics.setScissor(100, 100, 100, 100)
 end
 
 function love.draw()
     love.graphics.scale(scale_width, scale_height)
     game:draw()
-    game:update_test_mode(dt)
 end
 
 function love.resize()

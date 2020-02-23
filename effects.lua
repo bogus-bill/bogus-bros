@@ -49,7 +49,7 @@ function samplePerlin(x, slope_obj)
   local loPos = loSlope * dist
   local hiPos = -hiSlope * (1.0 - dist)
   local u = dist * dist * (3.0 - 2.0 * dist)
-  print(loSlope, hiSlope, dist, loPos, hiPos, u)
+  -- print(loSlope, hiSlope, dist, loPos, hiPos, u)
   return (loPos * (1.0 - u)) + (hiPos * u)
 end
 

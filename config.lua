@@ -9,22 +9,8 @@ local KEYS={
 }
 
 local config = {
-  ACCR=0.13*300,
-  DEC=0.02513*600,
-  JUMPING_DEC=1.5,
-  ACCW=0.7,
-  MAXSPEED_W=1.4*2,              -- max walking speed
-  MAXSPEED_R=1.4*2*2,          -- max regular running speed
-  MAXSPEED_HSR=1.4*(12/7)*1.5*2, -- max high speed running speed
-  TIME_UNTIL_HS_RUNNING=0.8,    -- how many frames while runnig at MAXSPEED_R until reaching high speed running
-  FRC=0.015*600,
   AIR_DRAG_CONST1=0.125,
   AIR_DRAG_CONST2=0.96875,
-  MAX_FALLING_SPEED=12,
-  JUMPSPEED=5.81*1.2*2, 
-  -- JUMPSPEED_HSR=5.81*1.2*1.5,
-  GRAVITYSPEED=0.13*300,
-  MAXJUMPSPEED=1.8,
   KEYS=KEYS,
   WINDOWOPTIONS = {
     vsync=true,
@@ -37,10 +23,26 @@ local config = {
     pixel_height=16,
   },
   DT_RATIO=60,
-  STATESTACKMAXELEM=20,
+  STATESTACKMAXELEM=10,
   DRAW_BBOXES=false,
   CAMERA_SHAKE={RANDOM=0.2, PERLIN=2.0, MAX_X=10.0, MAX_Y=10.0, MAX_ANGLE=0.1},
   CAMERA_LAZY_FOLLOW={value=0.94},
 } 
+config.ACCR = 0.16
+config.DEC = config.ACCR*0.7
+config.ACCW = config.ACCR 
+config.JUMPING_DEC = config.DEC*1.5
+config.JUMPSPEED = 15
+config.MAXSPEED_W = 3                       -- max walking speed
+config.MAXSPEED_R = config.MAXSPEED_W*1.5    -- max regular running speed
+config.MAXSPEED_HSR = config.MAXSPEED_R*1.5  -- max high speed running speed
+config.FRC = 0.05   -- friction force
+config.GRAVITYSPEED = 0.7
+-- config.MAXJUMPSPEED = 1.8
+config.MAX_FALLING_SPEED = 15
+-- CAMERATYPE choices are ["follow_lazily", "center_on"]
+config.CAMERATYPE="follow_lazily"
+-- TIME_UNTIL_HS_RUNNING: how many frames while runnig at MAXSPEED_R until reaching high speed running
+config.TIME_UNTIL_HS_RUNNING=40    
 
 return config
