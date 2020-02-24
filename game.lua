@@ -1,9 +1,11 @@
-local graphics = graphics or require "graphics"
-local events = events or require "events"
-local config = config or require "config"
+local graphics = require "graphics"
+local events = require "events"
+local config = require "config"
 local objects = require "objects"
 local physics = require "lib/physics"
 local Drawable = require "lib/drawable"
+local Camera = require "camera"
+local utils = require "lib/utils"
 
 local game = {}
 
@@ -38,11 +40,6 @@ function Rect:update()
   -- self.y = self.y + 10
 end
 
-function game:get_coordinates()
-  -- fit mario in the middle of the screen
-  local playerx, playery = self.player.x, self.player.y
-end
-
 function game:get_resolution()
   return self.tiles.pixel_width*self.tiles.width, self.tiles.pixel_height*self.tiles.height
 end
@@ -50,6 +47,8 @@ end
 local game_width, game_height = game:get_resolution()
 
 function game:init()
+  camera = Camera:new(0, 0, game_width, game_height)
+  self.camera = camera
   local characters = require "characters"
   self.player = characters.Player:new(game_width/2, 0, 16*2, 24*2, 0, 0)
   self.animated = {}
@@ -60,7 +59,7 @@ function game:init()
 
 end
 
-function game:add_key_control(key, value, step)
+function add_key_control(key, value, step)
   if love.keyboard.isDown(key) then
     if love.keyboard.isDown("lctrl") then
       value = value - step
@@ -78,15 +77,15 @@ function game:throw_rectangle()
 end
 
 function game:update_test_mode()
-  config.GRAVITYSPEED = game:add_key_control("u", config.GRAVITYSPEED, 0.1)
-  config.DEC = game:add_key_control("i", config.DEC, 0.2)
-  config.ACCR = game:add_key_control("o", config.ACCR, 0.1)
-  config.JUMPSPEED = game:add_key_control("p", config.JUMPSPEED, 0.01)
-  config.FRC = game:add_key_control("j", config.FRC, 0.2)
-  config.MAXSPEED_R = game:add_key_control("k", config.MAXSPEED_R, 0.1)
-  config.CAMERA_SHAKE["PERLIN"] = game:add_key_control("l", config.CAMERA_SHAKE["PERLIN"], 0.01)
-  config.CAMERA_LAZY_FOLLOW["value"] = game:add_key_control("g", config.CAMERA_LAZY_FOLLOW["value"], 0.001)
-  config.CAMERA_SHAKE.MAX_X = game:add_key_control("f", config.CAMERA_SHAKE.MAX_X, 0.5)
+  config.GRAVITYSPEED = add_key_control("u", config.GRAVITYSPEED, 0.1)
+  config.DEC = add_key_control("i", config.DEC, 0.2)
+  config.ACCR = add_key_control("o", config.ACCR, 0.1)
+  config.JUMPSPEED = add_key_control("p", config.JUMPSPEED, 0.01)
+  config.FRC = add_key_control("j", config.FRC, 0.2)
+  config.MAXSPEED_R = add_key_control("k", config.MAXSPEED_R, 0.1)
+  config.CAMERA_SHAKE["PERLIN"] = add_key_control("l", config.CAMERA_SHAKE["PERLIN"], 0.01)
+  config.CAMERA_LAZY_FOLLOW["value"] = add_key_control("g", config.CAMERA_LAZY_FOLLOW["value"], 0.001)
+  config.CAMERA_SHAKE.MAX_X = add_key_control("f", config.CAMERA_SHAKE.MAX_X, 0.5)
   love.graphics.print(config.GRAVITYSPEED                   ,150, 200-200)
   love.graphics.print(config.DEC                            ,150, 220-200)
   love.graphics.print(config.ACCR                           ,150, 240-200)
@@ -107,8 +106,6 @@ function game:update_test_mode()
   love.graphics.print("camera lazy follow g"                                 ,0,   340-200)
   love.graphics.print('camera shake MAX_X f'                                 ,0,   360-200)
 end
-
-
 
 function game:update(dt)
   self.dt = dt
@@ -136,69 +133,14 @@ function game:update(dt)
   
 end
 
-camera = {
-  x = 0,
-  y = 0,
-}
-
-function game:is_slow_motion()
-  return self.slow_motion
-end
-
-function camera:follow_lazily(x, y, width, height)
-  local object_centerx, object_centery = (x + width/2), (y + height/2)
-  local ideal_x = object_centerx - game_width/2
-  local ideal_y = object_centery - game_height/2
-
-  self.x = self.x + (ideal_x - self.x) * (1.0-config.CAMERA_LAZY_FOLLOW["value"])
-  -- self.x = self.x*config.CAMERA_LAZY_FOLLOW["value"] + ideal_x*(1.0-config.CAMERA_LAZY_FOLLOW["value"])
-  self.y = self.y*0.90 + ideal_y*0.10
-
-  self.x = math.max(0, self.x)
-  self.x = math.min(self.x, 2000)
-  self.y = math.min(self.y, 0)
-
-  self.x = self.x
-  self.y = self.y
-end
-
-function camera:center_on(x, y, width, height)
-  local object_center = (x + width/2)
-  self.x = object_center - game_width/2
-  self.y = (y + height/2) - game_height/2
-
-  self.x = math.max(0, self.x)
-  self.x = math.min(self.x, 2000)
-
-  -- self.y = math.max(0, self.y)
-  self.y = math.min(self.y, 0)
-end
-
-function camera:to_screen_position(x, y)
-  return x-self.x, y-self.y
-end
+local frame_number = 0
+local angle = 0
 
 game.ennemies = {}
 game.effects = {}
 
-local frame_number = 0
-local angle = 0
-
-function camera:start_shake(time_shaking)
-  self.is_shaking = true
-  self.shake_timer = time_shaking
-end
-
-function camera:update(frame_cnt)
-  if self.is_shaking then
-    angle, offx, offy = shake_camera_perlin(frame_cnt)
-    self.x = self.x + offx
-    self.y = self.y + offy
-    self.shake_timer = self.shake_timer - frame_cnt
-    if self.shake_timer <= 0 then
-      self.is_shaking = false
-    end
-  end
+function game:is_slow_motion()
+  return self.slow_motion
 end
 
 function game:draw_all(dt)

@@ -10,9 +10,8 @@ ORDERED BY PRIORITY:
 - ability to grab stuff (shells, bomb, etc..)
 
 secondary:
-
+- procedural generation of tilemap
 - liminous aura around player
-- slow-motion 
 - missile tete chercheuse
 - bat baseball
 - 2 players game with fireballs
@@ -40,8 +39,8 @@ secondary:
 - fireballs that destroy walls
 - bob-bombs
 
-
 # DONE:
+- slow-motion 
 - add Perlin noise and cubic asymptotic for camera
 - add proper jumping for mario
 - add background from image
@@ -52,7 +51,5 @@ secondary:
 - DO YOU WANT TO KILL ??? (need to kill everyone that scared you first)
 - "YET ANOTHER FUCKED UP GAME": name of game
 
-
 IDEE:
-
 - stocker les 10 dernieres positions de mario et en faire une courbe pour voir 
