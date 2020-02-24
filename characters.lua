@@ -142,7 +142,7 @@ end
 
 function Player:update_speed()
   local new_vx, new_vy = self.vx, self.vy
-  print("vx is", self.vx)
+--   print("vx is", self.vx)
   local acc, dec = config.ACCR, config.DEC
 
   new_vy = self:process_jump(self.vy)
@@ -204,8 +204,18 @@ function Player:apply_air_dragging()
   end
 end
 
+function love.handlers.start_camera_shake()
+    camera:start_shake(100)
+end
+
 function Player:is_on_floor()
-    return self.y + self.height >= floor_y
+    local old_is_on_floor = self._is_on_floor or false
+    self._is_on_floor = self.y + self.height >= floor_y
+    local just_landed = self._is_on_floor and not old_is_on_floor
+    if just_landed then
+        love.event.push("start_camera_shake")
+    end
+    return self._is_on_floor, just_landed 
 end
 
 function Player:process_sprite_state()
@@ -376,9 +386,39 @@ function Player:update_sprite(frame_cnt)
     self:update_sprite_offset()
 end
 
+
+function interpolate(a, b, step, modulo_reste)
+  return b + (b-a)*(modulo_reste) / step
+end
+
 function Player:update(dt, frame_cnt)
-  print("direction", self.direction, self.movement)
+  local modulo_reste = self.frame_cnt % SLOWMOTION_STEP 
+  
+  if game:is_slow_motion() then
+    if modulo_reste ~= 0 then
+      if table.getn(self.statestack) > 0 then
+              self.interpolated_x = interpolate(
+              self.statestack[1].x,
+              self.x, 
+              SLOWMOTION_STEP,
+              modulo_reste
+          )
+          self.interpolated_y = interpolate(
+              self.statestack[1].y,
+              self.y, 
+              SLOWMOTION_STEP,
+              modulo_reste
+          )
+      end
+      return
+    else
+      self.interpolated_x = nil    
+      self.interpolated_y = nil    
+    end
+  end
+
   self.cnt_dt = self.cnt_dt + 1
+  self:update_statestack(config.STATESTACKMAXELEM)
   self:calculate_maxspeed()
   self:update_directions(self.vx)
   self:update_speed()
@@ -386,7 +426,6 @@ function Player:update(dt, frame_cnt)
   self:process_high_speed_running(dt)
   self.bbox:update_coordinates(self.x, self.y)
 
-  self:update_statestack(config.STATESTACKMAXELEM)
 -- TODO: remove that when possible
 --   if game:is_slow_motion() then
 --     DT_RATIO = 15

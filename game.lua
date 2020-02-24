@@ -9,7 +9,7 @@ local game = {}
 
 game.tiles = config.TILES
 
-game.frame_cnt = 0
+game.frame_cnt = 1
 game.animated_background = graphics.animated_background
 
 require "effects"
@@ -108,8 +108,13 @@ function game:update_test_mode()
   love.graphics.print('camera shake MAX_X f'                                 ,0,   360-200)
 end
 
+
+
 function game:update(dt)
   self.dt = dt
+  self.frame_cnt = self.frame_cnt + 1
+  self.player.frame_cnt = self.frame_cnt
+
   if events:pushing_reset() then
     self.player.x, self.player.y = self:get_resolution()
   end
@@ -120,10 +125,7 @@ function game:update(dt)
     th.update()
   end
 
-  self.frame_cnt = self.frame_cnt + 1
-
   local player = self.player
-
 
   camera_type = config.CAMERATYPE or "center_on"
   if camera_type == "center_on" then
@@ -131,6 +133,7 @@ function game:update(dt)
   elseif camera_type == "follow_lazily" then
     camera:follow_lazily(player.x, player.y, player.width, player.height, self.dt)
   end
+  
 end
 
 camera = {
@@ -181,19 +184,66 @@ game.effects = {}
 local frame_number = 0
 local angle = 0
 
-function game:draw_all()
-  if self:is_slow_motion() then
-    frame_number = frame_number + 1
-    angle, offx, offy = shake_camera_perlin(frame_number)
-    -- angle, offx, offy = shake_camera(frame_number)
-    camera.x = camera.x + offx
-    camera.y = camera.y + offy
+function camera:start_shake(time_shaking)
+  self.is_shaking = true
+  self.shake_timer = time_shaking
+end
+
+function camera:update(frame_cnt)
+  if self.is_shaking then
+    angle, offx, offy = shake_camera_perlin(frame_cnt)
+    self.x = self.x + offx
+    self.y = self.y + offy
+    self.shake_timer = self.shake_timer - frame_cnt
+    if self.shake_timer <= 0 then
+      self.is_shaking = false
+    end
   end
+end
+
+function game:draw_all(dt)
+  -- frame_number = frame_number + 1
+  camera:update(self.frame_cnt)
+  -- -- print(self.frame_cnt)
+  -- if self:is_slow_motion() then
+  --   frame_number = frame_number + 1
+  --   angle, offx, offy = shake_camera_perlin(frame_number)
+  --   -- angle, offx, offy = shake_camera(frame_number)
+  --   camera.x = camera.x + offx
+  --   camera.y = camera.y + offy
+  -- end
 
   local drawables = {self.animated_background, self.player}
-
+  
   for _, object in pairs(drawables) do
-      local obj_x, obj_y = camera:to_screen_position(object.x, object.y)
+      -- local obj_x, obj_y
+      -- modulo_reste = self.frame_cnt % SLOWMOTION_STEP - 1
+      -- if object.statestack then
+        -- print(object.x, object.y, object.statestack)
+        -- print("stack is", object.statestack[1])
+        -- interpolated_x = interpolate(object.statestack[1].x, object.x, SLOWMOTION_STEP, modulo_reste) 
+        -- interpolated_y = interpolate(object.statestack[1].y, object.y, SLOWMOTION_STEP, modulo_reste) 
+        
+      --   obj_x, obj_y = camera:to_screen_position(interpolated_x, interpolated_y)
+      --   obj_x2, obj_y2 = camera:to_screen_position(
+      --     object.statestack[1].x, 
+      --     object.statestack[1].y
+      --   )
+      --   obj_x3, obj_y3 = camera:to_screen_position(object.x, object.y)
+      --   -- object:draw(obj_x, obj_y, angle)
+      --   print(object.y, object.statestack[1].y, interpolated_y)
+      --   object:draw(obj_x, obj_y, angle)
+      --   -- object:draw(obj_x3, obj_y3, angle)
+      -- else
+      --   obj_x, obj_y = camera:to_screen_position(object.x, object.y)
+      --   object:draw(obj_x, obj_y, angle)
+      -- end
+      if object.statestack and table.getn(object.statestack) > 0 and object.interpolated_x then
+        obj_x, obj_y = camera:to_screen_position(object.interpolated_x, object.interpolated_y)
+        -- print(object.statestack[1].y, object.y, object.interpolated_y)
+      else
+        obj_x, obj_y = camera:to_screen_position(object.x, object.y)
+      end
       object:draw(obj_x, obj_y, angle)
   end
   game:update_test_mode()
@@ -206,7 +256,7 @@ local rect = {
   height = 150,
 }
 
-function game:draw()
+function game:draw(dt)
   local mode = 'line'
   local is_collision = self.player:collide_bbox(rect.x, rect.y, rect.width, rect.height)
   if is_collision then
@@ -224,7 +274,7 @@ function game:draw()
     mode = 'fill'
   end
   local obj_x, obj_y = camera:to_screen_position(rect.x, rect.y)
-  self:draw_all()
+  self:draw_all(dt)
   love.graphics.rectangle(mode, obj_x, obj_y, rect.width, rect.height, angle)
 
 end

@@ -41,7 +41,7 @@ function love.run()
             love.graphics.origin()
             love.graphics.clear(love.graphics.getBackgroundColor())
  
-            if love.draw then love.draw() end
+            if love.draw then love.draw(TICK_RATE) end
             love.graphics.present()
         end
 
