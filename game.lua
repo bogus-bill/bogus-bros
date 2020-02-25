@@ -112,6 +112,7 @@ function game:update(dt)
   self.frame_cnt = self.frame_cnt + 1
   self.player.frame_cnt = self.frame_cnt
 
+
   if events:pushing_reset() then
     self.player.x, self.player.y = self:get_resolution()
   end

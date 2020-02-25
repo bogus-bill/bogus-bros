@@ -144,11 +144,15 @@ function Player:update_speed()
   local new_vx, new_vy = self.vx, self.vy
 --   print("vx is", self.vx)
   local acc, dec = config.ACCR, config.DEC
+--   if self.pushed_jump then
 
-  new_vy = self:process_jump(self.vy)
-  new_vy = self:process_gravity(new_vy)
---   new_vy = self:process_speed_limits_vy(new_vy)
+  self.jump_timer = self.jump_timer or 0 -- TODO: move this in new function
+  self.allowed_jumps = self.allowed_jumps or 0
+
   new_vx = self:calculate_input_acceleration(self.vx, acc, dec)
+  new_vy = self:process_gravity(self.vy)
+  new_vy = self:try_jump() or new_vy
+--   new_vy = self:process_speed_limits_vy(new_vy)
 
   self.vx, self.vy = new_vx, new_vy
 end
@@ -178,17 +182,52 @@ function Player:jump(vy)
     return vy
 end
 
-function Player:process_jump(vy)
+function Player.gogo()
+    print("ok")
+end
+
+function Player:can_physically_jump()
+    return self.jump_ok
+    -- return self:is_on_floor() and self.jump_ok
+end
+
+-- function love.handlers.push_jump(args)
+--     game.player.pushed_jump = true
+--     print("pushed jump")
+-- end
+
+function Player:process_inputs()
   if love.keyboard.isDown(config.KEYS.JUMP) then
-    if self:is_on_floor() and self.jump_ok then
-        vy = -self.jumpspeed
-        self.jump_ok = false
-        self.jump_flag = true
-    end
-  elseif self:is_on_floor() then
-    self.jump_ok = true
+    -- love.event.push("push_jump", "player1")
+    self.pushed_jump = true
   end
-  return vy
+end
+
+function Player:do_jump()
+    vy = -self.jumpspeed
+    self.jump_ok = false
+    self.jump_flag = true
+    self.allowed_jumps = self.allowed_jumps - 1
+    return vy
+end
+
+function Player:try_jump()
+  local vy = self.vy
+  if love.keyboard.isDown(config.KEYS.JUMP) then
+    if self:can_physically_jump() then
+      return self:do_jump()
+    else
+        self.jump_timer = self.jump_timer + 1
+    end
+    if self.jump_timer >= 10 or self:is_on_floor() then
+      self.jump_ok = true
+      self.jump_timer = 0
+      if self:is_on_floor() then 
+        self.allowed_jumps = 2
+      end
+    end
+  end
+  self.pushed_jump = false
 end
 
 function Player:apply_air_dragging()
@@ -392,9 +431,9 @@ function interpolate(a, b, step, modulo_reste)
 end
 
 function Player:update(dt, frame_cnt)
-  local modulo_reste = self.frame_cnt % SLOWMOTION_STEP 
-  
+  self:process_inputs()
   if game:is_slow_motion() then
+    local modulo_reste = self.frame_cnt % SLOWMOTION_STEP 
     if modulo_reste ~= 0 then
       if table.getn(self.statestack) > 0 then
               self.interpolated_x = interpolate(
@@ -425,13 +464,6 @@ function Player:update(dt, frame_cnt)
   self:update_sprite(frame_cnt)
   self:process_high_speed_running(dt)
   self.bbox:update_coordinates(self.x, self.y)
-
--- TODO: remove that when possible
---   if game:is_slow_motion() then
---     DT_RATIO = 15
---   else
---     DT_RATIO = 60
---   end
 
   self.x = self.x + self.vx
   self.y = self.y + self.vy
