@@ -221,15 +221,15 @@ end
 function Player:process_sprite_state()
     local absvx = math.abs(self.vx)
     if self.looking_up == true then
-        self.sprite_state = "looking_up"
+        return "looking_up"
     elseif absvx >= config.MAXSPEED_R then
-        self.sprite_state = "highspeed_running"
+        return "highspeed_running"
     elseif absvx >= config.MAXSPEED_W then
-        self.sprite_state = "running"
+        return "running"
     elseif absvx > 0 then
-        self.sprite_state = "walking"
+        return "walking"
     else
-        self.sprite_state = "still"
+        return "still"
     end
 end
 
@@ -245,12 +245,11 @@ function Player:previous_direction()
     return self.statestack[1].direction
 end
 
-function Player:update_sprite_offset()
-    if table.getn(self.statestack) > 1 then
-        if self.direction ~= self:previous_direction() then
-            self.scalex = -self.scalex
-            self:process_offset() -- when scaling horizontally we need to adjust with a horizontal offset
-        end
+function Player:update_sprite_offset(direction)
+    self.scalex = math.abs(self.scalex)
+    self:process_offset() -- when scaling horizontally we need to adjust with a horizontal offset
+    if self.direction == "right" then
+        self.scalex = -self.scalex
     end
 end
 
@@ -381,9 +380,10 @@ function Player:update_statestack(stackmax)
 end
 
 function Player:update_sprite(frame_cnt)
-    self:process_sprite_state()
+    local direction = self.direction
+    self.sprite_state = self:process_sprite_state()
     self.current_quad = self:calculate_quad(frame_cnt)
-    self:update_sprite_offset()
+    self:update_sprite_offset(direction)
 end
 
 
@@ -410,6 +410,7 @@ function Player:update(dt, frame_cnt)
               modulo_reste
           )
       end
+      self:update_sprite(frame_cnt)
       return
     else
       self.interpolated_x = nil    
@@ -417,7 +418,6 @@ function Player:update(dt, frame_cnt)
     end
   end
 
-  self.cnt_dt = self.cnt_dt + 1
   self:update_statestack(config.STATESTACKMAXELEM)
   self:calculate_maxspeed()
   self:update_directions(self.vx)
