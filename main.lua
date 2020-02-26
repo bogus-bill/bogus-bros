@@ -7,8 +7,6 @@ local window_options = config.WINDOWOPTIONS
 local game_width, game_height = game:get_resolution()
 local scale_width, scale_height
 
-SLOWMOTION_STEP = 6
-
 -- implementation of love.run with fixed timestep 
 -- from excellent article https://gafferongames.com/post/fix_your_timestep
 require 'love_run'

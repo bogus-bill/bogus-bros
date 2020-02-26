@@ -152,6 +152,7 @@ function Player:update_speed()
   new_vx = self:calculate_input_acceleration(self.vx, acc, dec)
   new_vy = self:process_gravity(self.vy)
   new_vy = self:try_jump() or new_vy
+  new_vy = self:try_sting_down() or new_vy
 --   new_vy = self:process_speed_limits_vy(new_vy)
 
   self.vx, self.vy = new_vx, new_vy
@@ -199,6 +200,12 @@ function Player:process_inputs()
         self.has_released_push = true
         self.pushed_jump = false
     end
+
+    if love.keyboard.isDown(config.KEYS.DOWN) then
+        self.pushed_down = true
+    else
+        self.pushed_down = false
+    end
 end
 
 function Player:reset_jumps(allowed_jumps, jump_timer)
@@ -217,28 +224,14 @@ function Player:do_jump()
 end
 
 JUMP_WAIT_FRAMES = 20
+MAX_JUMPS = 10
 
 function Player:try_jump()
-  local vy = self.vy
---   if love.keyboard.isDown(config.KEYS.JUMP) then
-    -- if self:can_physically_jump() then
-    --   return self:do_jump()
-    -- else
-    --     self.jump_timer = self.jump_timer + 1
-    -- end
-    -- if self.jump_timer <= 0 or self:is_on_floor() then
-    --   self.jump_ok = true
-    --   if self:is_on_floor() then 
-    --     self.allowed_jumps = 2
-    --   end
-    -- end
---   end
   self.jump_timer = self.jump_timer + 1
   if self:is_on_floor() then 
-      self:reset_jumps(2, 0)
+      self:reset_jumps(MAX_JUMPS, 0)
       self.jump_flag = false
   end
-  print(self.allowed_jumps, self.jump_timer)
   if self.pushed_jump then
       if self:is_on_floor() then 
           return self:do_jump()
@@ -246,6 +239,21 @@ function Player:try_jump()
           return self:do_jump()
       end
   end
+end
+
+function Player:do_sting_down()
+    return self.vy + 2
+end
+
+function Player:try_sting_down()
+    if self.pushed_down then
+        if not self:is_on_floor() then
+            game:activate_slow_motion(4)
+            return self:do_sting_down()
+        end
+    else
+        game.slow_motion = false
+    end
 end
 
 function Player:apply_air_dragging()
@@ -451,19 +459,19 @@ end
 function Player:update(dt, frame_cnt)
   self:process_inputs()
   if game:is_slow_motion() then
-    local modulo_reste = self.frame_cnt % SLOWMOTION_STEP 
+    local modulo_reste = self.frame_cnt % game.slow_motion.frequency 
     if modulo_reste ~= 0 then
       if table.getn(self.statestack) > 0 then
               self.interpolated_x = interpolate(
               self.statestack[1].x,
               self.x, 
-              SLOWMOTION_STEP,
+              game.slow_motion.frequency,
               modulo_reste
           )
           self.interpolated_y = interpolate(
               self.statestack[1].y,
               self.y, 
-              SLOWMOTION_STEP,
+              game.slow_motion.frequency,
               modulo_reste
           )
       end

@@ -53,9 +53,11 @@ function samplePerlin(x, slope_obj)
   return (loPos * (1.0 - u)) + (hiPos * u)
 end
 
-function shake_camera_perlin(frame_number)
+function shake_camera_perlin(frame_number, power)
+  perlin_power = power or config.CAMERA_SHAKE.PERLIN + 2
+
   local divider = 20.0
-  local x = (frame_number*config.CAMERA_SHAKE.PERLIN) % (1000*math.floor(divider))
+  local x = (frame_number*perlin_power) % (1000*math.floor(divider))
   x = x / divider
   local perlin = samplePerlin(x, slope_1)
   local perlin2 = samplePerlin(x, slope_2)

@@ -8,7 +8,7 @@ function Camera:follow_lazily(x, y, width, height)
   local ideal_y = object_centery - self.game_height/2
 
   self.x = self.x + (ideal_x - self.x) * (1.0-config.CAMERA_LAZY_FOLLOW["value"])
-  self.y = self.y*0.90 + ideal_y*0.10
+  self.y = self.y*0.85 + ideal_y*0.15
 
   self.x = math.max(0, self.x)
   self.x = math.min(self.x, 2000)
@@ -35,7 +35,7 @@ function Camera:to_screen_position(x, y)
 end
 
 
-function Camera:start_shake(time_shaking)
+function Camera:start_shake(time_shaking, power)
   self.is_shaking = true
   self.shake_timer = time_shaking
 end

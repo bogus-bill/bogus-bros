@@ -141,6 +141,17 @@ game.ennemies = {}
 game.effects = {}
 
 function game:is_slow_motion()
+  if self.slow_motion then 
+    return true
+  end
+  return false
+end
+
+function game:activate_slow_motion(frequency)
+  self.slow_motion = {
+    frequency=frequency
+  }
+  self.camera:start_shake(3)
   return self.slow_motion
 end
 
@@ -203,17 +214,16 @@ function game:draw(dt)
   local mode = 'line'
   local is_collision = self.player:collide_bbox(rect.x, rect.y, rect.width, rect.height)
   if is_collision then
-
     local a = (frame_number*config.CAMERA_SHAKE.PERLIN*config.CAMERA_SHAKE.MAX_X) % 1000
     local x = samplePerlin(a/20.0, slope_1)
     local y = samplePerlin(a/20.0, slope_2)
     local formula = (x+1) / 2.0
     love.graphics.setColor(1, formula, formula)
     mode = 'line'
-    self.slow_motion = true
+    self:activate_slow_motion(2)
   else
     love.graphics.setColor(1, 1, 1)
-    self.slow_motion = false
+    -- self.slow_motion = false
     mode = 'fill'
   end
   local obj_x, obj_y = camera:to_screen_position(rect.x, rect.y)
