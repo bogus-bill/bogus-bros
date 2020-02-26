@@ -177,13 +177,9 @@ end
 
 function Player:jump(vy)
     vy = -self.jumpspeed
-    self.jump_ok = false
+    -- self.jump_ok = false
     self.jump_flag = true
     return vy
-end
-
-function Player.gogo()
-    print("ok")
 end
 
 function Player:can_physically_jump()
@@ -191,43 +187,65 @@ function Player:can_physically_jump()
     -- return self:is_on_floor() and self.jump_ok
 end
 
--- function love.handlers.push_jump(args)
---     game.player.pushed_jump = true
---     print("pushed jump")
--- end
-
 function Player:process_inputs()
-  if love.keyboard.isDown(config.KEYS.JUMP) then
-    -- love.event.push("push_jump", "player1")
-    self.pushed_jump = true
-  end
+    if love.keyboard.isDown(config.KEYS.JUMP) then
+        if self.has_released_push then 
+            self.pushed_jump = true
+            self.has_released_push = false
+        else
+            self.pushed_jump = false
+        end
+    else
+        self.has_released_push = true
+        self.pushed_jump = false
+    end
+end
+
+function Player:reset_jumps(allowed_jumps, jump_timer)
+    -- self.jump_ok = true
+    self.jump_timer = jump_timer
+    self.allowed_jumps = allowed_jumps
 end
 
 function Player:do_jump()
     vy = -self.jumpspeed
-    self.jump_ok = false
     self.jump_flag = true
+    -- self.jump_ok = false
+    self.jump_timer = 0
     self.allowed_jumps = self.allowed_jumps - 1
     return vy
 end
 
+JUMP_WAIT_FRAMES = 20
+
 function Player:try_jump()
   local vy = self.vy
-  if love.keyboard.isDown(config.KEYS.JUMP) then
-    if self:can_physically_jump() then
-      return self:do_jump()
-    else
-        self.jump_timer = self.jump_timer + 1
-    end
-    if self.jump_timer >= 10 or self:is_on_floor() then
-      self.jump_ok = true
-      self.jump_timer = 0
-      if self:is_on_floor() then 
-        self.allowed_jumps = 2
-      end
-    end
+--   if love.keyboard.isDown(config.KEYS.JUMP) then
+    -- if self:can_physically_jump() then
+    --   return self:do_jump()
+    -- else
+    --     self.jump_timer = self.jump_timer + 1
+    -- end
+    -- if self.jump_timer <= 0 or self:is_on_floor() then
+    --   self.jump_ok = true
+    --   if self:is_on_floor() then 
+    --     self.allowed_jumps = 2
+    --   end
+    -- end
+--   end
+  self.jump_timer = self.jump_timer + 1
+  if self:is_on_floor() then 
+      self:reset_jumps(2, 0)
+      self.jump_flag = false
   end
-  self.pushed_jump = false
+  print(self.allowed_jumps, self.jump_timer)
+  if self.pushed_jump then
+      if self:is_on_floor() then 
+          return self:do_jump()
+      elseif self.allowed_jumps > 0 and self.jump_timer >= JUMP_WAIT_FRAMES then
+          return self:do_jump()
+      end
+  end
 end
 
 function Player:apply_air_dragging()
