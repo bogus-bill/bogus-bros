@@ -14,7 +14,6 @@ require 'love_run'
 function love.load()
     love.window.setMode(game_width, game_height, window_options)
     game:init()
-    game:update(1/60)
 end
 
 function love.update(dt)
@@ -30,3 +29,4 @@ function love.resize()
     local screen_width, screen_height = love.graphics.getDimensions()
     scale_width, scale_height = screen_width/game_width, screen_height/game_height
 end
+

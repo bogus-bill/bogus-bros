@@ -22,7 +22,6 @@ local config = {
     pixel_width=16,
     pixel_height=16,
   },
-  DT_RATIO=60,
   STATESTACKMAXELEM=10,
   DRAW_BBOXES=false,
   CAMERA_SHAKE={RANDOM=0.2, PERLIN=2.0, MAX_X=10.0, MAX_Y=10.0, MAX_ANGLE=0.1},

@@ -1,10 +1,11 @@
 local config = require 'config'
 require "sprites"
+love.graphics.setDefaultFilter("nearest", "nearest")
 
 local graphics = {}
 
 local animated_background = {
-  quads = back5,
+  quads = stars_background,
   current_quad=1,
   speed_ind=1,
   frame_period = 8, -- we want to switch frames 4 times a second

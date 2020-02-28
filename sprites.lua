@@ -1,15 +1,20 @@
 
 -- game = game or require "game"
 -- require "game"
-
+love.graphics.setDefaultFilter("nearest", "nearest")
 block_width, block_height = 512, 432
+love.graphics.setDefaultFilter("nearest", "nearest")
+
 text_atlas = love.graphics.newImage('sprites/mario/marios.png')
+love.graphics.setDefaultFilter("nearest", "nearest")
+
 background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds Animated.png')
 
 local back_height_1 = 18
 local back_height_2 = 18+block_height+6
 local back_height_3 = 18+(block_height+6)*11
 local back_height_5 = 16+(block_height+6)*10
+local back_height_stars = 1770
 
 back1 = {
   love.graphics.newQuad(7, back_height_1, block_width, block_height, background_atlas:getDimensions()),
@@ -24,6 +29,7 @@ back2 = {
   love.graphics.newQuad(1033, back_height_2, block_width, block_height, background_atlas:getDimensions()),
   love.graphics.newQuad(1546, back_height_2, block_width, block_height, background_atlas:getDimensions())
 }
+
 back3 = {
   love.graphics.newQuad(7, back_height_3, block_width, block_height, background_atlas:getDimensions()),
   love.graphics.newQuad(520, back_height_3, block_width, block_height, background_atlas:getDimensions()),
@@ -38,6 +44,13 @@ back5 = {
   love.graphics.newQuad(1546, back_height_5, block_width, block_height, background_atlas:getDimensions())
 }
 
+stars_background = {
+  love.graphics.newQuad(7, back_height_stars, block_width, block_height, background_atlas:getDimensions()),
+  love.graphics.newQuad(7+513, back_height_stars, block_width, block_height, background_atlas:getDimensions()),
+  love.graphics.newQuad(7+513*2, back_height_stars, block_width, block_height, background_atlas:getDimensions()),
+  love.graphics.newQuad(7+513*3, back_height_stars, block_width, block_height, background_atlas:getDimensions())
+}
+
 function new_sprite(quad, texture_atlas)
   local sprite = {}
   sprite["quad"] = love.graphics.newQuad(7, back_height_3, block_width, block_height, background_atlas:getDimensions())
@@ -45,34 +58,9 @@ function new_sprite(quad, texture_atlas)
   return sprite
 end
 
-mario_atlas = love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
-objects_atlas = love.graphics.newImage('sprites/objects/objects_atlas.png')
-objects_atlas2 = love.graphics.newImage('sprites/objects/SMO_Power_Moon_Green.png')
-mario_quad = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions())
-mario_quad2 = love.graphics.newQuad(18, 10, 16, 24, mario_atlas:getDimensions())
-mario_quad4 = love.graphics.newQuad(54, 10, 16, 24, mario_atlas:getDimensions())
-
-mario_quads = { 
-  still = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions()),
-  walking = love.graphics.newQuad(18, 10, 16, 24, mario_atlas:getDimensions()),
-}
-
-still_mario_quad = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions()), mario_atlas
-local walking_mario = new_sprite(love.graphics.newQuad(18, 10, 16, 24, mario_atlas:getDimensions()), mario_atlas)
-
-
-sprite_set = {}
-
-sprite_set["mario"] = {}
-sprite_set["mario"]["walking"] = {
-  mario_quad,
-  mario_quad2,
-}
-sprite_set["mario"]["still"] = {
-  quads={
-    still_mario_quad,
-  },
-}
+mario_atlas =     love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
+objects_atlas =   love.graphics.newImage('sprites/objects/objects_atlas.png')
+objects_atlas2 =  love.graphics.newImage('sprites/objects/SMO_Power_Moon_Green.png')
 
 SpriteAnimation = {}
 
@@ -93,20 +81,53 @@ function SpriteAnimation:next()
   return self.sprite
 end
 
-walking_sprites = SpriteAnimation.new(sprite_set["mario"]["walking"])
-
-
 hs_running_spriteset = {
-  love.graphics.newQuad(103, 10, 16, 24, mario_atlas:getDimensions()),
-  love.graphics.newQuad(120, 10, 16, 24, mario_atlas:getDimensions()),
+  love.graphics.newQuad(103, 10+1187, 16, 24, mario_atlas:getDimensions()),
+  love.graphics.newQuad(120, 10+1187, 16, 24, mario_atlas:getDimensions()),
   -- love.graphics.newQuad(1+16*9 + 9, 10, 16, 24, mario_atlas:getDimensions()),
 }
 
 hs_running_sprites = SpriteAnimation.new(hs_running_spriteset)
-
-lookingup_mario_quad = love.graphics.newQuad(36, 10, 16, 24, mario_atlas:getDimensions())
+still_mario_quad = love.graphics.newQuad(1, 10, 16, 24, mario_atlas:getDimensions())
+lookingup_mario_quad = love.graphics.newQuad(35, 10, 16, 24, mario_atlas:getDimensions())
 lookingdown_mario_quad = love.graphics.newQuad(52, 10, 16, 24, mario_atlas:getDimensions())
-jumping_mario_quad = love.graphics.newQuad(70, 10, 16, 24, mario_atlas:getDimensions())
-falling_mario_quad = love.graphics.newQuad(88, 10, 16, 24, mario_atlas:getDimensions())
-jumping_high_speed_mario_quad = love.graphics.newQuad(136, 10, 16, 24, mario_atlas:getDimensions())
+jumping_mario_quad = love.graphics.newQuad(69, 10, 16, 24, mario_atlas:getDimensions())
+falling_mario_quad = love.graphics.newQuad(86, 10, 16, 24, mario_atlas:getDimensions())
+jumping_high_speed_mario_quad = love.graphics.newQuad(137, 10, 16, 24, mario_atlas:getDimensions())
+braking_mario_quad = love.graphics.newQuad(154, 10, 16, 24, mario_atlas:getDimensions())
+facing_screen_mario_quad = love.graphics.newQuad(171, 10, 16, 24, mario_atlas:getDimensions())
+backing_screen_mario_quad = love.graphics.newQuad(188, 10, 16, 24, mario_atlas:getDimensions())
 
+still_mario_quad = love.graphics.newQuad(1, 10+1187, 16, 24, mario_atlas:getDimensions())
+lookingup_mario_quad = love.graphics.newQuad(35, 10+1187, 16, 24, mario_atlas:getDimensions())
+lookingdown_mario_quad = love.graphics.newQuad(52, 10+1187, 16, 24, mario_atlas:getDimensions())
+jumping_mario_quad = love.graphics.newQuad(69, 10+1187, 16, 24, mario_atlas:getDimensions())
+falling_mario_quad = love.graphics.newQuad(86, 10+1187, 16, 24, mario_atlas:getDimensions())
+jumping_high_speed_mario_quad = love.graphics.newQuad(137, 10+1187, 16, 24, mario_atlas:getDimensions())
+braking_mario_quad = love.graphics.newQuad(154, 10+1187, 16, 24, mario_atlas:getDimensions())
+facing_screen_mario_quad = love.graphics.newQuad(171, 10+1187, 16, 24, mario_atlas:getDimensions())
+backing_screen_mario_quad = love.graphics.newQuad(188, 10+1187, 16, 24, mario_atlas:getDimensions())
+
+mario_quad =      love.graphics.newQuad(1, 10+1187, 16, 24, mario_atlas:getDimensions())
+mario_quad2 =     love.graphics.newQuad(18, 10+1187, 16, 24, mario_atlas:getDimensions())
+mario_quad4 =     love.graphics.newQuad(54, 10+1187, 16, 24, mario_atlas:getDimensions())
+
+mario_quads = { 
+  still = love.graphics.newQuad(1, 10+1187, 16, 24, mario_atlas:getDimensions()),
+  walking = love.graphics.newQuad(18, 10+1187, 16, 24, mario_atlas:getDimensions()),
+}
+
+
+sprite_set = {}
+
+sprite_set["mario"] = {}
+sprite_set["mario"]["walking"] = {
+  mario_quad,
+  mario_quad2,
+}
+sprite_set["mario"]["still"] = {
+  quads={
+    still_mario_quad,
+  },
+}
+walking_sprites = SpriteAnimation.new(sprite_set["mario"]["walking"])

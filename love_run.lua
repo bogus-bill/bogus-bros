@@ -2,7 +2,7 @@
 local TICK_RATE = 1/60
 
 -- How many Frames are allowed to be skipped at once due to lag (no "spiral of death")
-local MAX_FRAME_SKIP = 25
+local MAX_FRAME_SKIP = 10
 
 function love.run()
     if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
@@ -40,7 +40,7 @@ function love.run()
         if love.graphics and love.graphics.isActive() then
             love.graphics.origin()
             love.graphics.clear(love.graphics.getBackgroundColor())
- 
+            
             if love.draw then love.draw(TICK_RATE) end
             love.graphics.present()
         end

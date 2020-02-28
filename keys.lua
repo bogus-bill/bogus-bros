@@ -1,9 +1,0 @@
-KEYS={
-  LEFT="left",
-  RIGHT="right",
-  DOWN="down",
-  UP="up",
-  RUN="lshift",
-  JUMP="space",
-  RESET="f",
-}

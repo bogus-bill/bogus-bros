@@ -1,6 +1,5 @@
 ORDERED BY PRIORITY:
   - add flying enemies with sinusodial movement just like in shoot-them-ups
-  - make slow-motion for time=X
   - missile tete chercheuse
   - boomrang
 
