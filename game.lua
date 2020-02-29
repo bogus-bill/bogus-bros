@@ -6,6 +6,7 @@ local physics = require "lib/physics"
 local Drawable = require "lib/drawable"
 local Camera = require "camera"
 local utils = require "lib/utils"
+local Levels = require "levels"
 
 local game = {}
 
@@ -21,12 +22,12 @@ local throwables = {}
 local Rect = {
   x=0,
   y=0,
-  width = 5,
-  height = 5,
+  width = 32,
+  height = 32,
 }
 
-function Rect.new(x, y)
-  local obj = {x=x, y=y}
+function Rect.new(x, y, width, height, quad)
+  local obj = {x=x, y=y, width=width, height=height, quad=quad}
   setmetatable(obj, {__index=Rect})
   return obj
 end
@@ -35,9 +36,31 @@ function Rect:draw()
   love.graphics.rectangle(self.x, self.y, self.width, self.height)
 end
 
-function Rect:update()
-  -- self.x = self.x + 10
-  -- self.y = self.y + 10
+rects = {}
+
+function game:get_floors()
+  return self:get_resolution()
+  -- TODO: change to upper line of level lines
+end
+
+function game:load_level(level)
+  self.level = level
+  print(string.format("level %s loaded", level.name))
+  for _, tile in pairs(level.tile_lines) do
+      for x=0,config.TILES.width do
+        rect_x, rect_y = to_upperleft(x*16, tile.y*16, 32, config.TILES.height*config.TILES.pixel_height)
+        print("tile.quad", tile.quad)
+        local rec = Rect.new(rect_x, rect_y, 32*100, 32, tile.quad)
+        table.insert(rects, rec)
+      end
+  end
+
+  for _, obj in pairs(level.misc) do
+    local rect_x, rect_y = to_upperleft(obj.x*16, obj.y*16, 32, config.TILES.height*config.TILES.pixel_height)
+    local rec = Rect.new(rect_x, rect_y, 32, 32, obj.quad)
+    table.insert(rects, rec)
+  end
+
 end
 
 function game:get_resolution()
@@ -47,6 +70,7 @@ end
 local game_width, game_height = game:get_resolution()
 
 function game:init()
+  game:load_level(Levels.level1)
   camera = Camera:new(0, 0, game_width, game_height)
   self.camera = camera
   local characters = require "characters"
@@ -55,7 +79,7 @@ function game:init()
   self.luna = objects.Luna.new()
   self.slow_motion = false
 
-  self:throw_rectangle(rect)
+  -- self:throw_rectangle(rect)
 
 end
 
@@ -69,7 +93,6 @@ function add_key_control(key, value, step)
   end
   return value
 end
-
 
 function game:throw_rectangle()
   local rect = Rect.new(self.player.x, self.player.y)
@@ -86,6 +109,9 @@ function game:update_test_mode()
   config.CAMERA_SHAKE["PERLIN"] = add_key_control("l", config.CAMERA_SHAKE["PERLIN"], 0.01)
   config.CAMERA_LAZY_FOLLOW["value"] = add_key_control("g", config.CAMERA_LAZY_FOLLOW["value"], 0.001)
   config.CAMERA_SHAKE.MAX_X = add_key_control("f", config.CAMERA_SHAKE.MAX_X, 0.5)
+end
+
+function game:draw_test_mode()
   love.graphics.print(config.GRAVITYSPEED                   ,150, 200-200)
   love.graphics.print(config.DEC                            ,150, 220-200)
   love.graphics.print(config.ACCR                           ,150, 240-200)
@@ -112,7 +138,6 @@ function game:update(dt)
   self.frame_cnt = self.frame_cnt + 1
   self.player.frame_cnt = self.frame_cnt
 
-
   if events:pushing_reset() then
     self.player.x, self.player.y = self:get_resolution()
   end
@@ -132,13 +157,10 @@ function game:update(dt)
     camera:follow_lazily(player.x, player.y, player.width, player.height, self.dt)
   end
   
+  self:update_test_mode()
 end
 
 local frame_number = 0
-local angle = 0
-
-game.ennemies = {}
-game.effects = {}
 
 function game:is_slow_motion()
   if self.slow_motion then 
@@ -151,56 +173,46 @@ function game:activate_slow_motion(frequency)
   self.slow_motion = {
     frequency=frequency
   }
-  self.camera:start_shake(3)
-  return self.slow_motion
 end
 
-function game:draw_all(dt)
-  -- frame_number = frame_number + 1
-  camera:update(self.frame_cnt)
-  -- -- print(self.frame_cnt)
-  -- if self:is_slow_motion() then
-  --   frame_number = frame_number + 1
-  --   angle, offx, offy = shake_camera_perlin(frame_number)
-  --   -- angle, offx, offy = shake_camera(frame_number)
-  --   camera.x = camera.x + offx
-  --   camera.y = camera.y + offy
-  -- end
 
-  local drawables = {self.animated_background, self.player}
-  
-  for _, object in pairs(drawables) do
-      -- local obj_x, obj_y
-      -- modulo_reste = self.frame_cnt % SLOWMOTION_STEP - 1
-      -- if object.statestack then
-        -- print(object.x, object.y, object.statestack)
-        -- print("stack is", object.statestack[1])
-        -- interpolated_x = interpolate(object.statestack[1].x, object.x, SLOWMOTION_STEP, modulo_reste) 
-        -- interpolated_y = interpolate(object.statestack[1].y, object.y, SLOWMOTION_STEP, modulo_reste) 
-        
-      --   obj_x, obj_y = camera:to_screen_position(interpolated_x, interpolated_y)
-      --   obj_x2, obj_y2 = camera:to_screen_position(
-      --     object.statestack[1].x, 
-      --     object.statestack[1].y
-      --   )
-      --   obj_x3, obj_y3 = camera:to_screen_position(object.x, object.y)
-      --   -- object:draw(obj_x, obj_y, angle)
-      --   print(object.y, object.statestack[1].y, interpolated_y)
-      --   object:draw(obj_x, obj_y, angle)
-      --   -- object:draw(obj_x3, obj_y3, angle)
-      -- else
-      --   obj_x, obj_y = camera:to_screen_position(object.x, object.y)
-      --   object:draw(obj_x, obj_y, angle)
-      -- end
+function game:draw_backgrounds()
+  local backgrounds = {self.animated_background}
+  for _, object in pairs(backgrounds) do
+    obj_x, obj_y = camera:to_screen_position(object.x, object.y)
+    object:draw(obj_x, obj_y)
+  end
+end
+
+function game:draw_animated()
+    local animated = {self.player}
+    for _, object in pairs(animated) do
       if object.statestack and table.getn(object.statestack) > 0 and object.interpolated_x then
         obj_x, obj_y = camera:to_screen_position(object.interpolated_x, object.interpolated_y)
-        -- print(object.statestack[1].y, object.y, object.interpolated_y)
       else
         obj_x, obj_y = camera:to_screen_position(object.x, object.y)
       end
-      object:draw(obj_x, obj_y, angle)
+      object:draw(obj_x, obj_y)
+    end
+end
+
+require "tiles"
+
+function game:draw_tiles()
+  for _, rec in pairs(rects) do
+    obj_x, obj_y = camera:to_screen_position(rec.x, rec.y)
+    Tile.draw(obj_x, obj_y, rec.quad)
+    -- love.graphics.rectangle('fill', obj_x, obj_y, rec.width, rec.height)
   end
-  game:update_test_mode()
+end
+
+require "shaders"
+function game:draw_all(dt)
+  camera:update(self.frame_cnt)
+  game:draw_backgrounds()
+  game:draw_tiles()
+  game:draw_animated()
+  game:draw_test_mode()
 end
 
 local rect = {
@@ -220,16 +232,17 @@ function game:draw(dt)
     local formula = (x+1) / 2.0
     love.graphics.setColor(1, formula, formula)
     mode = 'line'
-    self:activate_slow_motion(2)
+    self:activate_slow_motion(4)
   else
+    self.slow_motion = false
     love.graphics.setColor(1, 1, 1)
-    -- self.slow_motion = false
     mode = 'fill'
   end
   local obj_x, obj_y = camera:to_screen_position(rect.x, rect.y)
   self:draw_all(dt)
-  love.graphics.rectangle(mode, obj_x, obj_y, rect.width, rect.height, angle)
-
+  local background_color = {0/255, 64/255, 64/255, 1}
+  love.graphics.setBackgroundColor(background_color)
+  love.graphics.rectangle(mode, obj_x, obj_y, rect.width, rect.height)
 end
 
 return game

@@ -28,11 +28,12 @@ function animated_background:draw(x, y, angle)
   local draw_at_x = {block_width, 0, -block_width}
   local draw_at_y = {block_height, 0, -block_height}
   for _, offset_x in pairs(draw_at_x) do
-    for _, offset_y in pairs(draw_at_y) do
+    -- for _, offset_y in pairs(draw_at_y) do
       local xpos = x % block_width + offset_x
-      local ypos = y % block_height + offset_y
+      -- local ypos = y % block_height + offset_y
+      local ypos = y
       love.graphics.draw(background_atlas, self.quads[self.current_quad], xpos, ypos, angle)
-    end
+    -- end
   end
 end
 

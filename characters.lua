@@ -5,7 +5,7 @@ local game = require "game"
 local Drawable = require "lib/drawable"
 
 local events = require "events"
-local floor_x, floor_y = game:get_resolution()
+local floor_x, floor_y = game:get_floors()
 local characters = {}
 
 require "sprites"
@@ -142,9 +142,7 @@ end
 
 function Player:update_speed()
   local new_vx, new_vy = self.vx, self.vy
---   print("vx is", self.vx)
   local acc, dec = config.ACCR, config.DEC
---   if self.pushed_jump then
 
   self.jump_timer = self.jump_timer or 0 -- TODO: move this in new function
   self.allowed_jumps = self.allowed_jumps or 0
@@ -152,7 +150,7 @@ function Player:update_speed()
   new_vx = self:calculate_input_acceleration(self.vx, acc, dec)
   new_vy = self:process_gravity(self.vy)
   new_vy = self:try_jump() or new_vy
-  new_vy = self:try_sting_down() or new_vy
+  new_vx, new_vy = self:try_sting_down() or new_vx, new_vy
 --   new_vy = self:process_speed_limits_vy(new_vy)
 
   self.vx, self.vy = new_vx, new_vy
@@ -242,21 +240,15 @@ function Player:try_jump()
 end
 
 function Player:do_sting_down()
-    return self.vy + 2
+    return self.vx, self.vy + 2
 end
 
 function Player:try_sting_down()
-    if self.pushed_down then
-        if not self:is_on_floor() then
-            game:activate_slow_motion(4)
-            return self:do_sting_down()
-        end
-    else
-        game.slow_motion = false
-    end
+    if (self:is_on_floor() or not self.pushed_down) then return end
+    return self:do_sting_down()
 end
 
-function Player:apply_air_dragging()
+    function Player:apply_air_dragging()
     -- applied when above floor
     if (not self:is_on_floor())
          -- and vy > -config.MAXJUMPSPEED
@@ -277,15 +269,17 @@ function Player:is_on_floor()
     local old_is_on_floor = self._is_on_floor or false
     self._is_on_floor = self.y + self.height >= floor_y
     local just_landed = self._is_on_floor and not old_is_on_floor
-    if just_landed then
-        love.event.push("start_camera_shake")
-    end
+    -- if just_landed then
+    --     love.event.push("start_camera_shake")
+    -- end
     return self._is_on_floor, just_landed 
 end
 
 function Player:process_sprite_state()
     local absvx = math.abs(self.vx)
-    if self.looking_up == true then
+    if self.is_braking then
+        return "braking"
+    elseif self.looking_up == true then
         return "looking_up"
     elseif absvx >= config.MAXSPEED_R then
         return "highspeed_running"
@@ -382,6 +376,8 @@ function Player:calculate_quad(frame_cnt)
         else
             return falling_mario_quad
         end
+    elseif self.braking then
+        return braking_mario_quad
     elseif self.looking_up then
         return lookingup_mario_quad
     elseif self.looking_down then
@@ -389,8 +385,7 @@ function Player:calculate_quad(frame_cnt)
     elseif math.abs(self.vx) == 0 then
         return still_mario_quad
     elseif math.abs(self.vx) > 0 and y_distance == 0 then
-        local min_rate, max_rate = 4, 8
-        return self:calculate_walking_sprite(min_rate, max_rate)
+        return self:calculate_walking_sprite(4, 10)
     end
     return current_quad
 end
@@ -456,47 +451,59 @@ function interpolate(a, b, step, modulo_reste)
   return b + (b-a)*(modulo_reste) / step
 end
 
+function Player:process_slow_motion(frame_cnt)
+    if game:is_slow_motion() then
+        local modulo_reste = frame_cnt % game.slow_motion.frequency 
+        if modulo_reste ~= 0 then
+            if table.getn(self.statestack) > 0 then
+                self.interpolated_x = interpolate(
+                self.statestack[1].x,
+                self.x, 
+                game.slow_motion.frequency,
+                modulo_reste
+                )
+                self.interpolated_y = interpolate(
+                    self.statestack[1].y,
+                    self.y, 
+                    game.slow_motion.frequency,
+                    modulo_reste
+                )
+            end
+            self:update_sprite(frame_cnt)
+            return "applied"
+        else
+          self.interpolated_x = nil    
+          self.interpolated_y = nil    
+        end
+    end
+end
+
+function Player:update_coordinates()
+    self.x = self.x + self.vx
+    self.y = self.y + self.vy
+  
+    if self.y + self.height >= floor_y then
+      self.y = floor_y - self.height
+    end
+end
+
 function Player:update(dt, frame_cnt)
   self:process_inputs()
-  if game:is_slow_motion() then
-    local modulo_reste = self.frame_cnt % game.slow_motion.frequency 
-    if modulo_reste ~= 0 then
-      if table.getn(self.statestack) > 0 then
-              self.interpolated_x = interpolate(
-              self.statestack[1].x,
-              self.x, 
-              game.slow_motion.frequency,
-              modulo_reste
-          )
-          self.interpolated_y = interpolate(
-              self.statestack[1].y,
-              self.y, 
-              game.slow_motion.frequency,
-              modulo_reste
-          )
-      end
-      self:update_sprite(frame_cnt)
-      return
-    else
-      self.interpolated_x = nil    
-      self.interpolated_y = nil    
-    end
-  end
-
-  self:update_statestack(config.STATESTACKMAXELEM)
   self:calculate_maxspeed()
+  local slow_motion_result = self:process_slow_motion(frame_cnt)
+  if slow_motion_result == "applied" then
+      return
+  end
+  if frame_cnt % 4 == 0 then
+    self:update_statestack(config.STATESTACKMAXELEM)
+  end
   self:update_directions(self.vx)
   self:update_speed()
   self:update_sprite(frame_cnt)
   self:process_high_speed_running(dt)
+  self:update_coordinates()
   self.bbox:update_coordinates(self.x, self.y)
 
-  self.x = self.x + self.vx
-  self.y = self.y + self.vy
-
-  if self.y + self.height >= floor_y then
-    self.y = floor_y - self.height
-  end
 end
 
 function Player:draw(x, y, angle)

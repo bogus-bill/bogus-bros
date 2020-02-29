@@ -2,6 +2,7 @@ require 'lib/tools'
 
 local config = require 'config'
 local game = require 'game'
+require 'shaders'
 
 local window_options = config.WINDOWOPTIONS
 local game_width, game_height = game:get_resolution()

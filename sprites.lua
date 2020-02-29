@@ -3,10 +3,9 @@
 -- require "game"
 love.graphics.setDefaultFilter("nearest", "nearest")
 block_width, block_height = 512, 432
-love.graphics.setDefaultFilter("nearest", "nearest")
 
 text_atlas = love.graphics.newImage('sprites/mario/marios.png')
-love.graphics.setDefaultFilter("nearest", "nearest")
+tiles_atlas = love.graphics.newImage('sprites/tiles/tiles.png')
 
 background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds Animated.png')
 
@@ -46,9 +45,9 @@ back5 = {
 
 stars_background = {
   love.graphics.newQuad(7, back_height_stars, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(7+513, back_height_stars, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(7+513*2, back_height_stars, block_width, block_height, background_atlas:getDimensions()),
-  love.graphics.newQuad(7+513*3, back_height_stars, block_width, block_height, background_atlas:getDimensions())
+  love.graphics.newQuad(520, back_height_stars, block_width, block_height, background_atlas:getDimensions()),
+  love.graphics.newQuad(1033, back_height_stars, block_width, block_height, background_atlas:getDimensions()),
+  love.graphics.newQuad(1546, back_height_stars, block_width, block_height, background_atlas:getDimensions())
 }
 
 function new_sprite(quad, texture_atlas)
@@ -59,7 +58,7 @@ function new_sprite(quad, texture_atlas)
 end
 
 mario_atlas =     love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
-objects_atlas =   love.graphics.newImage('sprites/objects/objects_atlas.png')
+objects_atlas =   love.graphics.newImage('sprites/objects/luna1.png')
 objects_atlas2 =  love.graphics.newImage('sprites/objects/SMO_Power_Moon_Green.png')
 
 SpriteAnimation = {}
@@ -131,3 +130,7 @@ sprite_set["mario"]["still"] = {
   },
 }
 walking_sprites = SpriteAnimation.new(sprite_set["mario"]["walking"])
+tile_floor1_quad = love.graphics.newQuad(34, 102, 16, 16, tiles_atlas:getDimensions())
+tile_floor2_quad = love.graphics.newQuad(34, 119, 16, 16, tiles_atlas:getDimensions())
+luna_all =            love.graphics.newImage('sprites/objects/luna1.png')
+luna1 =               love.graphics.newQuad(0, 0, 32, 32, luna_all:getDimensions())

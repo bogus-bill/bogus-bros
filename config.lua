@@ -17,8 +17,8 @@ local config = {
     resizable=true,
   },
   TILES={
-    width=32,
-    height=27,
+    width=32*1.5,
+    height=18*1.5,
     pixel_width=16,
     pixel_height=16,
   },
