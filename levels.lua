@@ -5,7 +5,9 @@ level1 = {
     width       = 200,
     height      = 200,
     tile_lines  = {
-        {y=3, quad=tile_floor1_quad},
+        {y=5, quad=tile_floor1_quad},
+        {y=4, quad=tile_floor2_quad},
+        {y=3, quad=tile_floor2_quad},
         {y=2, quad=tile_floor2_quad},
         {y=1, quad=tile_floor2_quad},
     },

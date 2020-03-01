@@ -1,6 +1,5 @@
 local config = require 'config'
 require "sprites"
-love.graphics.setDefaultFilter("nearest", "nearest")
 
 local graphics = {}
 
@@ -13,6 +12,8 @@ local animated_background = {
   x=0,
   y=0
 }
+
+local block_width, block_height = 512, 432
 
 graphics.animated_background = animated_background
 

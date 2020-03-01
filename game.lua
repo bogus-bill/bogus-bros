@@ -48,15 +48,14 @@ function game:load_level(level)
   print(string.format("level %s loaded", level.name))
   for _, tile in pairs(level.tile_lines) do
       for x=0,config.TILES.width do
-        rect_x, rect_y = to_upperleft(x*16, tile.y*16, 32, config.TILES.height*config.TILES.pixel_height)
-        print("tile.quad", tile.quad)
+        rect_x, rect_y = to_upperleft(x*15, tile.y*15, 32, config.TILES.height*config.TILES.pixel_height)
         local rec = Rect.new(rect_x, rect_y, 32*100, 32, tile.quad)
         table.insert(rects, rec)
       end
   end
 
   for _, obj in pairs(level.misc) do
-    local rect_x, rect_y = to_upperleft(obj.x*16, obj.y*16, 32, config.TILES.height*config.TILES.pixel_height)
+    local rect_x, rect_y = to_upperleft(obj.x*15, obj.y*15, 32, config.TILES.height*config.TILES.pixel_height)
     local rec = Rect.new(rect_x, rect_y, 32, 32, obj.quad)
     table.insert(rects, rec)
   end
@@ -74,7 +73,7 @@ function game:init()
   camera = Camera:new(0, 0, game_width, game_height)
   self.camera = camera
   local characters = require "characters"
-  self.player = characters.Player:new(game_width/2, 0, 16*2, 24*2, 0, 0)
+  self.player = characters.Player:new(game_width/2, 0, 15*2, 24*2, 0, 0)
   self.animated = {}
   self.luna = objects.Luna.new()
   self.slow_motion = false
@@ -129,8 +128,9 @@ function game:draw_test_mode()
   love.graphics.print("friction j"                                         ,0,   280-200)
   love.graphics.print("maxspeedr k"                                        ,0,   300-200)
   love.graphics.print("camera shake l"                                     ,0,   320-200)
-  love.graphics.print("camera lazy follow g"                                 ,0,   340-200)
-  love.graphics.print('camera shake MAX_X f'                                 ,0,   360-200)
+  love.graphics.print("camera lazy follow g"                               ,0,   340-200)
+  love.graphics.print('camera shake MAX_X f'                               ,0,   360-200)
+  love.graphics.print("FPS: "..love.timer.getFPS()                         ,300, 360-200)
 end
 
 function game:update(dt)
@@ -184,7 +184,7 @@ function game:draw_backgrounds()
   end
 end
 
-function game:draw_animated()
+function game:draw_player()
     local animated = {self.player}
     for _, object in pairs(animated) do
       if object.statestack and table.getn(object.statestack) > 0 and object.interpolated_x then
@@ -208,10 +208,9 @@ end
 
 require "shaders"
 function game:draw_all(dt)
-  camera:update(self.frame_cnt)
   game:draw_backgrounds()
   game:draw_tiles()
-  game:draw_animated()
+  game:draw_player()
   game:draw_test_mode()
 end
 

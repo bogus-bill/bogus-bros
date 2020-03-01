@@ -13,7 +13,8 @@ local config = {
   AIR_DRAG_CONST2=0.96875,
   KEYS=KEYS,
   WINDOWOPTIONS = {
-    vsync=true,
+    vsync=0,
+    fullscreen=true,
     resizable=true,
   },
   TILES={

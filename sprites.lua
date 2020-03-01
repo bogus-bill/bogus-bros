@@ -2,13 +2,16 @@
 -- game = game or require "game"
 -- require "game"
 love.graphics.setDefaultFilter("nearest", "nearest")
+text_atlas =        love.graphics.newImage('sprites/mario/marios.png')
+mario_atlas =       love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
+-- love.graphics.setDefaultFilter("linear", "linear")
+tiles_atlas =       love.graphics.newImage('sprites/tiles/tiles2.png')
+objects_atlas =     love.graphics.newImage('sprites/objects/luna1.png')
+objects_atlas2 =    love.graphics.newImage('sprites/objects/SMO_Power_Moon_Green.png')
+background_atlas =  love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds Animated.png')
+luna_all =            love.graphics.newImage('sprites/objects/luna1.png')
+
 block_width, block_height = 512, 432
-
-text_atlas = love.graphics.newImage('sprites/mario/marios.png')
-tiles_atlas = love.graphics.newImage('sprites/tiles/tiles.png')
-
-background_atlas = love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds Animated.png')
-
 local back_height_1 = 18
 local back_height_2 = 18+block_height+6
 local back_height_3 = 18+(block_height+6)*11
@@ -56,10 +59,6 @@ function new_sprite(quad, texture_atlas)
   sprite["texture_atlas"] = texture_atlas
   return sprite
 end
-
-mario_atlas =     love.graphics.newImage('sprites/mario/SNES - Super Mario World - Mario_.png')
-objects_atlas =   love.graphics.newImage('sprites/objects/luna1.png')
-objects_atlas2 =  love.graphics.newImage('sprites/objects/SMO_Power_Moon_Green.png')
 
 SpriteAnimation = {}
 
@@ -116,7 +115,6 @@ mario_quads = {
   walking = love.graphics.newQuad(18, 10+1187, 16, 24, mario_atlas:getDimensions()),
 }
 
-
 sprite_set = {}
 
 sprite_set["mario"] = {}
@@ -129,8 +127,8 @@ sprite_set["mario"]["still"] = {
     still_mario_quad,
   },
 }
+
 walking_sprites = SpriteAnimation.new(sprite_set["mario"]["walking"])
-tile_floor1_quad = love.graphics.newQuad(34, 102, 16, 16, tiles_atlas:getDimensions())
-tile_floor2_quad = love.graphics.newQuad(34, 119, 16, 16, tiles_atlas:getDimensions())
-luna_all =            love.graphics.newImage('sprites/objects/luna1.png')
+tile_floor1_quad = love.graphics.newQuad(34, 102, 15, 15, tiles_atlas:getDimensions())
+tile_floor2_quad = love.graphics.newQuad(34, 119, 15, 15, tiles_atlas:getDimensions())
 luna1 =               love.graphics.newQuad(0, 0, 32, 32, luna_all:getDimensions())

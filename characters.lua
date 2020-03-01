@@ -16,6 +16,7 @@ setmetatable(Player, {__index=Drawable})
 
 function Player:new(x, y, width, height, vx, vy)
   local obj = {
+    base_height=height,
     width=width, height=height,
     x=x, y=y,
     offsetx=0, offsety=0,
