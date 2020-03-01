@@ -46,18 +46,19 @@ end
 function game:load_level(level)
   self.level = level
   print(string.format("level %s loaded", level.name))
+  
   for _, tile in pairs(level.tile_lines) do
-      for x=0,config.TILES.width do
+      for x=0, tile.width do
         rect_x, rect_y = to_upperleft(x*15, tile.y*15, 32, config.TILES.height*config.TILES.pixel_height)
-        local rec = Rect.new(rect_x, rect_y, 32*100, 32, tile.quad)
+        local rec = Tile.new(rect_x, rect_y, 100*32, 32, tile.img_data)
         table.insert(rects, rec)
       end
   end
 
-  for _, obj in pairs(level.misc) do
-    local rect_x, rect_y = to_upperleft(obj.x*15, obj.y*15, 32, config.TILES.height*config.TILES.pixel_height)
-    local rec = Rect.new(rect_x, rect_y, 32, 32, obj.quad)
-    table.insert(rects, rec)
+  for _, tile in pairs(level.misc) do
+    local rect_x, rect_y = to_upperleft(tile.x*15, tile.y*15, 32, config.TILES.height*config.TILES.pixel_height)
+    local tile = Tile.new(rect_x, rect_y, 32*100, 32, tile.img_data)
+    table.insert(rects, tile)
   end
 
 end
@@ -196,12 +197,12 @@ function game:draw_player()
     end
 end
 
-require "tiles"
+local Tile = require "tile"
 
 function game:draw_tiles()
-  for _, rec in pairs(rects) do
-    obj_x, obj_y = camera:to_screen_position(rec.x, rec.y)
-    Tile.draw(obj_x, obj_y, rec.quad)
+  for _, tile in pairs(rects) do
+    obj_x, obj_y = camera:to_screen_position(tile.x, tile.y)
+    tile:draw(obj_x, obj_y)
     -- love.graphics.rectangle('fill', obj_x, obj_y, rec.width, rec.height)
   end
 end

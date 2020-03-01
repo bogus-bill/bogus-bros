@@ -9,9 +9,9 @@ tiles_atlas =       love.graphics.newImage('sprites/tiles/tiles2.png')
 objects_atlas =     love.graphics.newImage('sprites/objects/luna1.png')
 objects_atlas2 =    love.graphics.newImage('sprites/objects/SMO_Power_Moon_Green.png')
 background_atlas =  love.graphics.newImage('sprites/background/SNES - Super Mario World - Backgrounds Animated.png')
-luna_all =            love.graphics.newImage('sprites/objects/luna1.png')
+luna_all =          love.graphics.newImage('sprites/objects/luna1.png')
 
-block_width, block_height = 512, 432
+local block_width, block_height = 512, 432
 local back_height_1 = 18
 local back_height_2 = 18+block_height+6
 local back_height_3 = 18+(block_height+6)*11
