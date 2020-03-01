@@ -1,8 +1,15 @@
 ORDERED BY PRIORITY:
+  - add painting mode to draw maps
   - add flying enemies with sinusodial movement just like in shoot-them-ups
   - missile tete chercheuse
+  - procedural generation of tilemap
   - boomrang
   - add HERO SIEGE mode
+  - procedural generation of enemies
+  - liminous aura around player when all black around
+  - add yoshi and flying yoshi?
+  - add jump + Z to stomp enemy
+  - add fireballs
 
 - add tilemap to add tiles (objets, walls, ...)
 - add scrolling of tilemap
@@ -11,20 +18,13 @@ ORDERED BY PRIORITY:
 - zoom / unzoom map
 
 secondary:
-- procedural generation of tilemap
-- liminous aura around player when all black around
-- missile tete chercheuse
 - bat baseball
 - 2 players game with fireballs
-- implement second jump
 - add 3D effects
 - add multiplayer single screen first
 - add "third" speed like wario after 2sec running or so
 - add laser eyes to shoot stuff
-- add yoshi and flying yoshi?
 - add wings
-- add fireballs
-- add jump + Z to stomp enemy
 - POW object with earthquake effect
 
 - lightning from sky which indicated like 2 seconds in advance where its gonna land
@@ -40,6 +40,7 @@ secondary:
 - bob-bombs
 
 # DONE:
+- implement second jump
 - slow-motion 
 - add Perlin noise and cubic asymptotic for camera
 - add proper jumping for mario
@@ -53,3 +54,5 @@ secondary:
 
 IDEE:
 - stocker les 10 dernieres positions de mario et en faire une courbe pour voir 
+
+- maybe here siege could be a "bonus mode" that get launched every 2/3 levels if u reach a good score or have gotten enough objects like lunas or whetever
